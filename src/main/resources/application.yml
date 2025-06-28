@@ -1,0 +1,113 @@
+# ?? ??
+spring:
+  application:
+    name: spring-library-system
+
+  # ???? ??
+  profiles:
+    active: dev
+
+  # JPA ??
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    defer-datasource-initialization: true
+
+  # SQL ???? ??
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+# ?? ??
+logging:
+  level:
+    com.example.library: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# ??? ??
+library:
+  loan:
+    default-period-weeks: 2
+    max-renewal-count: 2
+  notification:
+    email:
+      enabled: true
+      from: library@example.com
+
+---
+# ?? ?? ??
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # H2 ?????? ??
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # H2 Console ???
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+# ?? ??
+server:
+  port: 8080
+
+---
+# ??? ?? ??
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+---
+# ?? ?? ??
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/library_system
+    username: ${DB_USERNAME:library_user}
+    password: ${DB_PASSWORD:library_pass}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  port: 80
+
+library:
+  notification:
+    email:
+      smtp:
+        host: smtp.company.com
+        port: 587
+        username: ${SMTP_USERNAME}
+        password: ${SMTP_PASSWORD}
+
