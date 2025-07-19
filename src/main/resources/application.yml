@@ -1,30 +1,29 @@
-# ?? ??
+# 기본 설정
 spring:
   application:
     name: spring-library-system
 
-  # ???? ??
+  # 프로파일 설정
   profiles:
     active: dev
 
-  # JPA ??
+  # JPA 설정
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop  # 테이블 자동 생성
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        use_sql_comments: true
-    defer-datasource-initialization: true
+    defer-datasource-initialization: true  # ⭐⭐⭐ 매우 중요!
 
-  # SQL ???? ??
+  # SQL 스크립트 실행
   sql:
     init:
       mode: always
       data-locations: classpath:data.sql
 
-# ?? ??
+# 로깅 설정
 logging:
   level:
     com.example.library: DEBUG
@@ -32,7 +31,7 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-# ??? ??
+# 커스텀 설정
 library:
   loan:
     default-period-weeks: 2
@@ -43,20 +42,22 @@ library:
       from: library@example.com
 
 ---
-# ?? ?? ??
+# 개발 환경 설정
 spring:
   config:
     activate:
       on-profile: dev
 
-  # H2 ?????? ??
+  # H2 데이터베이스 설정
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    # url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    # url: jdbc:h2:tcp://localhost:9092/mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9093
     username: sa
     password:
     driver-class-name: org.h2.Driver
 
-  # H2 Console ???
+  # H2 Console 활성화
   h2:
     console:
       enabled: true
@@ -64,12 +65,12 @@ spring:
       settings:
         web-allow-others: true
 
-# ?? ??
+# 서버 설정
 server:
   port: 8080
 
 ---
-# ??? ?? ??
+# 테스트 환경 설정
 spring:
   config:
     activate:
@@ -82,7 +83,7 @@ spring:
     driver-class-name: org.h2.Driver
 
 ---
-# ?? ?? ??
+# 운영 환경 설정
 spring:
   config:
     activate:
@@ -110,4 +111,3 @@ library:
         port: 587
         username: ${SMTP_USERNAME}
         password: ${SMTP_PASSWORD}
-
