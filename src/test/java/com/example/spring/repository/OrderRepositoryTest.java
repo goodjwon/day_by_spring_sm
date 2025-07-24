@@ -10,6 +10,7 @@ import org.springframework.test.annotation.Rollback;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,21 +115,45 @@ public class OrderRepositoryTest {
     @Test
     public void findAll_주문목록반환() {
         //Given
+        Order order1 = Order.builder()
+                .totalAmount(new BigDecimal("15000"))
+                .orderDate(LocalDateTime.now())
+                .build();
+        Order order2 = Order.builder()
+                .totalAmount(new BigDecimal("30000"))
+                .orderDate(LocalDateTime.now())
+                .build();
+        orderRepository.save(order1);
+        orderRepository.save(order2);
         //When
+        List<Order> foundOrders = orderRepository.findAll();
         //Then
+        assertThat(foundOrders).isNotNull();
+        assertThat(foundOrders).hasSize(2);
     }
 
     @Test
     public void findOrderById_존재하는주문_주문직접반환() {
         //Given
+        Order newOrder = Order.builder()
+                .totalAmount(new BigDecimal("42000"))
+                .orderDate(LocalDateTime.now())
+                .build();
+        Order savedOrder = orderRepository.save(newOrder);
         //When
+        Order foundOrder = orderRepository.findByIdOrThrow(savedOrder.getId());
         //Then
+        assertThat(foundOrder).isNotNull();
+        assertThat(foundOrder.getId()).isEqualTo(savedOrder.getId());
     }
 
     @Test
     public void findOrderById_존재하지않는주문_null반환() {
         //Given
+        Long nonExistentId = 999L;
         //When
+        Order foundOrder = orderRepository.findByIdOrThrow(nonExistentId);
         //Then
+        assertThat(foundOrder).isNull();
     }
 }

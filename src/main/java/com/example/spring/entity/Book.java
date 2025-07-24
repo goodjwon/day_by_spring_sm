@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Book {
     //id, title, author, isbn, price, available, created_date
     @Id
@@ -36,6 +39,7 @@ public class Book {
     @Builder.Default
     private boolean available = true;
 
+    @CreatedDate
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
 }

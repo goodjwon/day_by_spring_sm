@@ -130,11 +130,25 @@ public class BookRepositoryTest {
 
     @Test
     public void findBookById_존재하는도서_도서직접반환() {
-
+        //Given
+        Long bookId = 6L;
+        //When
+        Book foundBook = bookRepository.findByIdOrThrow(bookId);
+        //Then
+        assertThat(foundBook).isNotNull();
+        assertThat(foundBook.getId()).isEqualTo(bookId);
+        assertThat(foundBook.getTitle()).isEqualTo("Clean Code");
     }
 
     @Test
     public void findBookById_존재하지않는도서_null반환() {
+        // Given
+        Long bookId = 999L;
 
+        // When
+        Book foundBook = bookRepository.findByIdOrThrow(bookId);
+
+        // Then
+        assertThat(foundBook).isNull();
     }
 }
