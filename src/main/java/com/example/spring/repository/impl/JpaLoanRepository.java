@@ -1,4 +1,4 @@
-package com.example.spring.repository.imple;
+package com.example.spring.repository.impl;
 
 import com.example.spring.entity.Loan;
 import com.example.spring.repository.LoanRepository;

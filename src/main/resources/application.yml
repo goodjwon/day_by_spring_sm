@@ -20,7 +20,7 @@ spring:
   # SQL 스크립트 실행
   sql:
     init:
-      mode: always
+      mode: never
       data-locations: classpath:data.sql
 
 # 로깅 설정
