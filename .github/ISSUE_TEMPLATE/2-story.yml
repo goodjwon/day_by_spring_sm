@@ -1,0 +1,118 @@
+name: "📋 Story - 기능 개발"
+description: "구체적인 기능 하나를 구현하는 Story"
+title: "[STORY] "
+labels: ["story", "status-todo"]
+assignees: []
+body:
+  - type: input
+    id: story-title
+    attributes:
+      label: "📋 Story 제목"
+      description: "구현할 구체적인 기능명"
+      placeholder: "예: 회원 단건 조회 API 구현"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: story-size
+    attributes:
+      label: "📏 Story 크기"
+      description: "예상 작업 규모"
+      options:
+        - "XS (1-2시간)"
+        - "S (반나절)"
+        - "M (1일)"
+        - "L (2-3일)"
+        - "XL (1주일) - 분할 필요"
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: "👤 User Story"
+      description: "사용자 관점에서의 요구사항"
+      placeholder: |
+        **As a** [사용자 유형]
+        **I want** [원하는 기능]
+        **So that** [기대하는 결과/이유]
+        
+        예:
+        As a 관리자
+        I want 회원 정보를 조회할 수 있다
+        So that 회원 관리를 효율적으로 할 수 있다
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "✅ 인수 조건 (Acceptance Criteria)"
+      description: "이 Story가 완료되었다고 판단할 수 있는 구체적인 조건들"
+      placeholder: |
+        - [ ] 회원 ID로 특정 회원 조회 가능
+        - [ ] 존재하지 않는 회원 ID 시 404 에러 반환
+        - [ ] 응답 시간 3초 이내
+        - [ ] 단위 테스트 작성 완료
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: "🔧 기술적 구현 사항"
+      description: "구현에 필요한 기술적 세부사항"
+      placeholder: |
+        **API 명세:**
+        - Method: GET
+        - URL: /api/members/{id}
+        - Response: MemberResponse DTO
+        
+        **구현할 파일:**
+        - MemberService.findMemberById()
+        - MemberController.getMember()
+        
+        **기술 스택:**
+        - Spring Data JPA
+        - Bean Validation
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-scenarios
+    attributes:
+      label: "🧪 테스트 시나리오"
+      description: "작성할 테스트 케이스들"
+      placeholder: |
+        **단위 테스트:**
+        - 정상 조회 성공 케이스
+        - 존재하지 않는 ID 예외 케이스
+        - null ID 입력 예외 케이스
+        
+        **통합 테스트:**
+        - API 호출 전체 플로우 테스트
+    validations:
+      required: true
+
+  - type: input
+    id: related-epic
+    attributes:
+      label: "🎯 관련 Epic"
+      description: "이 Story가 속한 Epic 이슈 번호"
+      placeholder: "예: #1 (Epic - 회원 관리 시스템)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "🔗 의존성"
+      description: "이 Story가 의존하는 다른 Story나 작업들"
+      placeholder: |
+        **선행 작업:**
+        - Story #번호: 기반 엔티티 설계
+        
+        **후속 작업:**
+        - Story #번호: 목록 조회 (이 기능을 기반으로 함)
+    validations:
+      required: false

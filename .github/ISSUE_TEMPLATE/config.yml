@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "📚 문서 및 가이드"
+    url: https://github.com/day_by_spring_sm/wiki
+    about: "프로젝트 문서 및 개발 가이드"
+  - name: "💬 질문 및 토론"
+    url: https://github.com/day_by_spring_sm/discussions
+    about: "질문이나 아이디어 토론을 위한 공간"

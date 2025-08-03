@@ -1,0 +1,71 @@
+name: "🐛 Bug Report"
+description: "버그 수정을 위한 리포트"
+title: "[BUG] "
+labels: ["bug", "priority-high"]
+assignees: []
+body:
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "🐛 버그 설명"
+      description: "발생한 버그에 대한 명확한 설명"
+      placeholder: "어떤 문제가 발생했는지 구체적으로 설명해주세요"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce-steps
+    attributes:
+      label: "🔄 재현 단계"
+      description: "버그를 재현할 수 있는 단계별 설명"
+      placeholder: |
+        1. 특정 페이지로 이동
+        2. 특정 버튼 클릭
+        3. 특정 입력값 입력
+        4. 오류 발생 확인
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "💭 예상 동작"
+      description: "정상적으로 동작해야 하는 방식"
+      placeholder: "어떻게 동작해야 한다고 생각하시나요?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: "❌ 실제 동작"
+      description: "실제로 어떻게 동작하는지"
+      placeholder: "실제로는 어떻게 동작하나요?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "🌍 환경 정보"
+      description: "버그가 발생한 환경"
+      placeholder: |
+        - OS: Windows 11
+        - 브라우저: Chrome 120
+        - Java 버전: 21
+        - Spring Boot 버전: 3.5.3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "🔥 심각도"
+      description: "버그의 심각도"
+      options:
+        - "Critical (시스템 중단)"
+        - "High (주요 기능 영향)"
+        - "Medium (일부 기능 영향)"
+        - "Low (사소한 문제)"
+    validations:
+      required: true
