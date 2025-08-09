@@ -6,7 +6,7 @@ public class EntityNotFoundException extends BusinessException  {
         super("ENTITY_NOT_FOUND", entityName + "을(를) 찾을 수 없습니다. ID: " + id);
     }
 
-    public EntityNotFoundException(String message) {
+    public EntityNotFoundException(String message, String name) {
         super("ENTITY_NOT_FOUND", message);
     }
 

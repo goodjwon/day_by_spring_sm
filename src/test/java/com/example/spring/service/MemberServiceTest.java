@@ -17,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,5 +108,26 @@ public class MemberServiceTest {
         assertThat(response.getId()).isEqualTo(memberId);
         assertThat(response.getName()).isEqualTo("홍길동");
         assertThat(response.getEmail()).isEqualTo("hong@example.com");
+    }
+
+    @Test
+    @DisplayName("이름으로 회원 조회 - 성공")
+    void findMembersByName_성공() {
+        //Given
+        Long memberId = 10L;
+        Member member = Member.builder()
+                .id(memberId)
+                .name("홍길동")
+                .email("hong@example.com")
+                .membershipType(MembershipType.REGULAR)
+                .build();
+
+        given(memberService.findMembersByName("홍길동"));
+
+        //When
+        List<MemberResponse> name = memberService.findMembersByName("홍길동");
+
+        //Then
+        assertThat(name).isEqualTo(List.of(member));
     }
 }

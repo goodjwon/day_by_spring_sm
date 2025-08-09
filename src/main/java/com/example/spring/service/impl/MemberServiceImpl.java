@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -70,8 +71,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Cacheable(value = "members", key = "#name")
     public List<MemberResponse> findMembersByName(String name) {
-        return List.of();
+        log.debug("회원 조회 - 이름: {}", name);
+        return null;
     }
 
     @Override
