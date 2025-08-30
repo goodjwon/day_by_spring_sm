@@ -1,6 +1,7 @@
 package com.example.spring.service.impl;
 
 import com.example.spring.dto.request.CreateMemberRequest;
+import com.example.spring.dto.request.UpdateMemberRequest;
 import com.example.spring.dto.response.MemberResponse;
 import com.example.spring.entity.Member;
 import com.example.spring.entity.MembershipType;
@@ -13,11 +14,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -60,6 +66,32 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberResponse updateMember(Long id, UpdateMemberRequest request) {
+        log.info("회원 정보 수정 요청 - ID: {}", id);
+        //1. 기존 회원 정보
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Member", id));
+
+        //2. 새로운 이름으로 갱신
+        member.setName(request.getName());
+
+        //1. 이메일 중복 검증
+        if (memberRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException(request.getEmail());
+        }
+
+        //3. 새로운 이메일로 갱신
+        member.setEmail(request.getEmail());
+
+        Member updatedMember = memberRepository.save(member);
+
+        log.info("회원 정보 수정 완료 - ID: {}", updatedMember.getId());
+
+        return MemberResponse.from(updatedMember);
+    }
+
+
+    @Override
     @Cacheable(value = "members", key = "#id")
     public MemberResponse findMemberById(Long id) {
         log.debug("회원 조회 - ID: {}", id);
@@ -70,13 +102,62 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberResponse findMemberByIdWithoutCache(Long id) {
+        log.debug("회원 조회 (캐시 미적용) - ID: {}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with id: ", id));
+
+        return MemberResponse.from(member);
+    }
+
+    @Override
+    public List<MemberResponse> findAllMembers() {
+        List<Member> members = memberRepository.findAll();
+
+        List<MemberResponse> results = new ArrayList<>();
+
+        for (Member member : members) {
+            MemberResponse.from(member);
+            results.add(MemberResponse.from(member));
+        }
+
+        /*
+         *   return memberRepository.findAll().stream()
+         *                 .map(MemberResponse::from)
+         *                 .collect(Collectors.toList());
+         */
+
+        return results;
+    }
+
+    @Override
+    public List<MemberResponse> findAllMembersPage(Pageable pageable) {
+        log.debug("전체 회원 목록 조회 - 페이지: {}, 크기: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        return memberRepository.findAll()
+                .stream()
+                .map(MemberResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<MemberResponse> findMembersByName(String name) {
-        return List.of();
+        log.debug("이름으로 회원 검색 - 검색어: {}", name);
+
+        return memberRepository.findByNameContaining(name)
+                .stream()
+                .map(MemberResponse::from)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<MemberResponse> findMembersByMembershipType(MembershipType type) {
-        return List.of();
+        log.debug("멤버쉽 타입으로 회원 조회: {}", type);
+        return memberRepository.findByMembershipType(type)
+                .stream()
+                .map(MemberResponse::from)
+                .collect(Collectors.toList());
     }
 
     @Override

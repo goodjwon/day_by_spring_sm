@@ -64,6 +64,10 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: true
+  #캐시 설정
+  cache:
+    type: { cache-names: "- members
+          - books" }
 
 # 서버 설정
 server:
