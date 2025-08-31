@@ -82,8 +82,4 @@ public class MemberController {
         List<MemberResponse> responses = memberService.findMembersByMembershipType(type);
         return ResponseEntity.ok(responses);
     }
-
-
-
-
 }
