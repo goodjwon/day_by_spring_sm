@@ -7,61 +7,29 @@ body:
   - type: markdown
     attributes:
       value: |
-        # ⚙️ Task Issue Template
+        # 📖 Task Issue Template
         
         구체적인 개발 작업을 정의하고 관리하기 위한 템플릿입니다.
-        Task는 여러 개의 Sub-task로 구성될 수 있습니다.
-
-  - type: input
-    id: task-title
-    attributes:
-      label: "📋 Task 제목"
-      description: "Task의 명확한 제목을 입력하세요"
-      placeholder: "예: Member Entity 설계 및 구현"
-    validations:
-      required: true
 
   - type: input
     id: parent-story
     attributes:
-      label: "📖 상위 Story"
+      label: "📚 Story"
       description: "이 Task가 속하는 Story 번호를 입력하세요"
-      placeholder: "예: #20"
+      placeholder: "예: [STORY] 도서 기본 CRUD 구현 (#23)"
     validations:
       required: true
 
   - type: dropdown
-    id: domain
+    id: status
     attributes:
-      label: "🏢 도메인"
-      description: "Task가 속하는 도메인을 선택하세요"
+      label: "📊 상태"
+      description: "Task의 현재 상태"
       options:
-        - member
-        - book
-        - order
-        - loan
-        - payment
-        - statistics
-        - system
-        - infrastructure
-    validations:
-      required: true
-
-  - type: dropdown
-    id: layer
-    attributes:
-      label: "🏗️ 레이어"
-      description: "Task가 속하는 아키텍처 레이어를 선택하세요"
-      options:
-        - entity
-        - repository
-        - service
-        - controller
-        - config
-        - exception
-        - dto
-        - util
-        - test
+        - "🔄 진행중"
+        - "⏳ 대기중"
+        - "✅ 완료"
+        - "🚫 중단"
     validations:
       required: true
 
@@ -71,88 +39,10 @@ body:
       label: "🔥 우선순위"
       description: "Task의 우선순위를 선택하세요"
       options:
-        - critical
-        - high
-        - medium
-        - low
-    validations:
-      required: true
-
-  - type: dropdown
-    id: task-type
-    attributes:
-      label: "🔧 작업 유형"
-      description: "Task의 유형을 선택하세요"
-      options:
-        - implementation
-        - refactoring
-        - testing
-        - documentation
-        - configuration
-        - validation
-        - performance
-        - security
-    validations:
-      required: true
-
-  - type: textarea
-    id: task-description
-    attributes:
-      label: "📝 Task 설명"
-      description: "Task의 구체적인 내용과 요구사항을 설명하세요"
-      placeholder: |
-        ## Task 개요
-        - 이 Task에서 수행할 작업을 간략히 설명하세요
-        
-        ## 상세 요구사항
-        - 구체적인 구현 사항들을 나열하세요
-        - 준수해야 할 코딩 컨벤션이나 아키텍처 가이드라인
-        
-        ## 기술 스택
-        - 사용할 기술, 라이브러리, 프레임워크 등
-    validations:
-      required: true
-
-  - type: textarea
-    id: implementation-details
-    attributes:
-      label: "💻 구현 세부사항"
-      description: "구현할 클래스, 메서드, 필드 등의 세부 사항"
-      placeholder: |
-        ## 구현할 클래스/인터페이스
-        ```java
-        @Entity
-        @Table(name = "member")
-        public class Member {
-            @Id
-            @GeneratedValue(strategy = GenerationType.IDENTITY)
-            private Long id;
-        
-            @Column(nullable = false, unique = true)
-            private String email;
-        
-            // 기타 필드들...
-        }
-        ```
-        
-        ## 주요 메서드
-        - `save(Member member)`: 회원 저장
-        - `findById(Long id)`: ID로 회원 조회
-        - `findByEmail(String email)`: 이메일로 회원 조회
-
-  - type: textarea
-    id: acceptance-criteria
-    attributes:
-      label: "✅ 완료 조건"
-      description: "Task가 완료되었다고 판단할 수 있는 구체적인 조건들"
-      placeholder: |
-        - [ ] Member 엔티티 클래스 구현
-        - [ ] JPA 어노테이션 적용
-        - [ ] 필드 검증 로직 구현
-        - [ ] 유니크 제약조건 설정
-        - [ ] Lombok 어노테이션 적용
-        - [ ] 단위 테스트 작성
-        - [ ] 코드 리뷰 완료
+        - "🔥 Critical"
+        - "🟡 High"
+        - "🟢 Medium"
+        - "🔵 Low"
     validations:
       required: true
 
@@ -160,67 +50,68 @@ body:
     id: estimated-effort
     attributes:
       label: "⏱️ 예상 소요시간"
-      description: "Task 완료까지 예상되는 시간 (예: 4시간, 0.5일)"
-      placeholder: "예: 6시간"
+      description: "Task 완료까지 예상되는 시간"
+      placeholder: "예: 5시간"
+
+  - type: textarea
+    id: task-description
+    attributes:
+      label: "📝 Task 설명"
+      description: "Task의 구체적인 내용과 요구사항을 설명하세요"
+      placeholder: |
+        도서 정보를 저장할 JPA Entity를 설계하고 구현합니다.
+        ISBN, 제목, 저자, 가격, 재고 수량 등의 필드와 적절한 제약조건을 포함합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-requirements
+    attributes:
+      label: "🎯 구현 요구사항"
+      description: "Task에서 구현해야 할 구체적인 요구사항들"
+      placeholder: |
+        - [ ] Book 엔티티 클래스 생성
+        - [ ] 필드 정의 (id, title, author, isbn, price, available, createdDate)
+        - [ ] JPA 어노테이션 적용
+        - [ ] ISBN 유니크 제약조건 설정
+        - [ ] Soft Delete 필드 추가 (deletedAt)
+        - [ ] Lombok 어노테이션 적용
+        - [ ] Audit 필드 추가
+    validations:
+      required: true
 
   - type: textarea
     id: subtasks
     attributes:
-      label: "📋 Sub-task 목록"
-      description: "이 Task에 포함될 Sub-task들을 나열하세요 (생성 후 링크 업데이트)"
+      label: "📋 Sub-task Issues"
+      description: "이 Task에 포함될 Sub-task들을 나열하세요"
       placeholder: |
         - [ ] 기본 필드 및 어노테이션 구현
-        - [ ] 제약조건 및 인덱스 설정
-        - [ ] Audit 기능 구현
+        - [ ] ISBN 검증 로직 구현
+        - [ ] Soft Delete 기능 구현
         - [ ] 단위 테스트 작성
 
   - type: textarea
-    id: technical-notes
+    id: tech-stack
     attributes:
-      label: "📚 기술적 고려사항"
-      description: "구현 시 고려해야 할 기술적 사항들"
+      label: "🔧 기술 스택"
+      description: "이 Task에서 사용할 기술, 라이브러리, 프레임워크"
       placeholder: |
-        ## 성능 고려사항
-        - 인덱스 설계
-        - 쿼리 최적화
-        
-        ## 보안 고려사항
-        - 데이터 검증
-        - 민감정보 처리
-        
-        ## 호환성
-        - 기존 코드와의 호환성
-        - 데이터베이스 마이그레이션
+        - Spring Data JPA
+        - Lombok
+        - Bean Validation
+        - Soft Delete Pattern
 
   - type: textarea
-    id: dependencies
+    id: definition-of-done
     attributes:
-      label: "🔗 의존성"
-      description: "이 Task가 의존하는 다른 Task나 외부 요소들"
+      label: "✅ Definition of Done"
+      description: "Task가 완료되었다고 판단할 수 있는 조건들"
       placeholder: |
-        ## 선행 Task
-        - #123 (Task: 데이터베이스 스키마 설계)
-        
-        ## 외부 의존성
-        - Spring Data JPA 설정
-        - 데이터베이스 연결 설정
-
-  - type: dropdown
-    id: complexity
-    attributes:
-      label: "🧩 복잡도"
-      description: "Task의 기술적 복잡도를 선택하세요"
-      options:
-        - simple
-        - medium
-        - complex
-        - very-complex
+        - [ ] Book 엔티티 구현 완료
+        - [ ] ISBN 유니크 제약조건 설정
+        - [ ] Soft Delete 기능 구현
+        - [ ] 단위 테스트 작성
+        - [ ] 코드 리뷰 완료
     validations:
       required: true
-
-  - type: input
-    id: milestone
-    attributes:
-      label: "🎯 마일스톤"
-      description: "이 Task가 속할 마일스톤"
-      placeholder: "예: Phase 1: 회원 & 도서 관리"

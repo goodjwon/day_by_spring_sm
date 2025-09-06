@@ -7,61 +7,29 @@ body:
   - type: markdown
     attributes:
       value: |
-        # 🔧 Sub-task Issue Template
+        # 📖 Sub-task Issue Template
         
         Task를 더 작은 단위로 나눈 세부 작업을 정의하고 관리하기 위한 템플릿입니다.
-        Sub-task는 일반적으로 몇 시간 내에 완료할 수 있는 단위 작업입니다.
-
-  - type: input
-    id: subtask-title
-    attributes:
-      label: "📋 Sub-task 제목"
-      description: "Sub-task의 명확한 제목을 입력하세요"
-      placeholder: "예: 기본 필드 및 어노테이션 구현"
-    validations:
-      required: true
 
   - type: input
     id: parent-task
     attributes:
-      label: "⚙️ 상위 Task"
+      label: "⚙️ Task"
       description: "이 Sub-task가 속하는 Task 번호를 입력하세요"
-      placeholder: "예: #25"
+      placeholder: "예: [TASK] Book Entity 설계 및 구현 (#27)"
     validations:
       required: true
 
   - type: dropdown
-    id: domain
+    id: status
     attributes:
-      label: "🏢 도메인"
-      description: "Sub-task가 속하는 도메인을 선택하세요"
+      label: "📊 상태"
+      description: "Sub-task의 현재 상태"
       options:
-        - member
-        - book
-        - order
-        - loan
-        - payment
-        - statistics
-        - system
-        - infrastructure
-    validations:
-      required: true
-
-  - type: dropdown
-    id: layer
-    attributes:
-      label: "🏗️ 레이어"
-      description: "Sub-task가 속하는 아키텍처 레이어를 선택하세요"
-      options:
-        - entity
-        - repository
-        - service
-        - controller
-        - config
-        - exception
-        - dto
-        - util
-        - test
+        - "🔄 진행중"
+        - "⏳ 대기중"
+        - "✅ 완료"
+        - "🚫 중단"
     validations:
       required: true
 
@@ -71,28 +39,19 @@ body:
       label: "🔥 우선순위"
       description: "Sub-task의 우선순위를 선택하세요"
       options:
-        - critical
-        - high
-        - medium
-        - low
+        - "🔥 Critical"
+        - "🟡 High"
+        - "🟢 Medium"
+        - "🔵 Low"
     validations:
       required: true
 
-  - type: dropdown
-    id: work-type
+  - type: input
+    id: estimated-effort
     attributes:
-      label: "🔧 작업 유형"
-      description: "Sub-task의 유형을 선택하세요"
-      options:
-        - coding
-        - testing
-        - refactoring
-        - documentation
-        - configuration
-        - validation
-        - review
-    validations:
-      required: true
+      label: "⏱️ 예상 소요시간"
+      description: "Sub-task 완료까지 예상되는 시간"
+      placeholder: "예: 2시간"
 
   - type: textarea
     id: subtask-description
@@ -100,40 +59,41 @@ body:
       label: "📝 Sub-task 설명"
       description: "Sub-task의 구체적인 작업 내용을 설명하세요"
       placeholder: |
-        ## 작업 내용
-        - 이 Sub-task에서 수행할 구체적인 작업을 설명하세요
-        
-        ## 구현 방법
-        - 어떻게 구현할지 간략히 설명하세요
-        
-        ## 주의사항
-        - 구현 시 주의할 점이나 고려사항을 나열하세요
+        Book 엔티티의 기본 필드를 정의하고 JPA 어노테이션을 적용합니다.
     validations:
       required: true
 
   - type: textarea
-    id: implementation-code
+    id: implementation-details
     attributes:
-      label: "💻 구현 코드 예시"
-      description: "구현할 코드의 예시나 스케치를 제공하세요"
+      label: "🎯 구현 세부사항"
+      description: "구현할 코드의 예시나 세부 사항을 제공하세요"
       placeholder: |
         ```java
         @Entity
-        @Table(name = "member")
-        public class Member {
+        @Table(name = "book")
+        public class Book {
             @Id
             @GeneratedValue(strategy = GenerationType.IDENTITY)
             private Long id;
         
-            @Column(nullable = false, unique = true, length = 100)
-            private String email;
+            @Column(nullable = false, length = 200)
+            private String title;
         
-            @Column(nullable = false, length = 50)
-            private String name;
+            @Column(nullable = false, length = 100)
+            private String author;
         
-            @Enumerated(EnumType.STRING)
+            @Column(nullable = false, unique = true, length = 13)
+            private String isbn;
+        
+            @Column(nullable = false, precision = 10, scale = 2)
+            private BigDecimal price;
+        
             @Column(nullable = false)
-            private MembershipType membershipType;
+            private Boolean available = true;
+        
+            @Column(name = "created_date", nullable = false)
+            private LocalDateTime createdDate;
         }
         ```
 
@@ -143,89 +103,9 @@ body:
       label: "✅ 완료 조건"
       description: "Sub-task가 완료되었다고 판단할 수 있는 구체적인 조건들"
       placeholder: |
-        - [ ] 기본 필드 정의 (id, email, name, membershipType)
-        - [ ] JPA 어노테이션 적용 (@Entity, @Table, @Id, @Column)
+        - [ ] 기본 필드 정의 (id, title, author, isbn, price, available, createdDate)
+        - [ ] JPA 어노테이션 적용
         - [ ] 테이블명 및 컬럼명 설정
-        - [ ] 제약조건 설정 (nullable, unique, length)
-        - [ ] Lombok 어노테이션 적용 (@Data, @Builder 등)
-        - [ ] 컴파일 에러 없음
-        - [ ] 기본 생성자/빌더 패턴 동작 확인
+        - [ ] 제약조건 설정 (nullable, unique, precision)
     validations:
       required: true
-
-  - type: input
-    id: estimated-effort
-    attributes:
-      label: "⏱️ 예상 소요시간"
-      description: "Sub-task 완료까지 예상되는 시간 (예: 2시간, 30분)"
-      placeholder: "예: 2시간"
-
-  - type: textarea
-    id: file-changes
-    attributes:
-      label: "📁 변경 대상 파일"
-      description: "이 Sub-task에서 생성하거나 수정할 파일들"
-      placeholder: |
-        ## 신규 생성
-        - `src/main/java/com/example/spring/entity/Member.java`
-        
-        ## 수정
-        - `src/main/resources/application.yml` (필요시)
-        
-        ## 테스트
-        - `src/test/java/com/example/spring/entity/MemberTest.java`
-
-  - type: textarea
-    id: test-scenarios
-    attributes:
-      label: "🧪 테스트 시나리오"
-      description: "이 Sub-task 완료 후 확인해야 할 테스트 시나리오"
-      placeholder: |
-        ## 단위 테스트
-        - [ ] Member 객체 생성 테스트
-        - [ ] 빌더 패턴 동작 테스트
-        - [ ] 필드 검증 테스트
-        
-        ## 통합 테스트
-        - [ ] JPA 어노테이션 동작 확인
-        - [ ] 데이터베이스 테이블 생성 확인
-        - [ ] 제약조건 적용 확인
-
-  - type: textarea
-    id: dependencies
-    attributes:
-      label: "🔗 의존성"
-      description: "이 Sub-task가 의존하는 다른 Sub-task나 외부 요소들"
-      placeholder: |
-        ## 선행 Sub-task
-        - 없음 (첫 번째 Sub-task)
-        
-        ## 외부 의존성
-        - Spring Data JPA 설정 완료
-        - 데이터베이스 연결 설정 완료
-        - Lombok 라이브러리 추가
-
-  - type: dropdown
-    id: difficulty
-    attributes:
-      label: "⭐ 난이도"
-      description: "Sub-task의 기술적 난이도를 선택하세요"
-      options:
-        - easy
-        - medium
-        - hard
-    validations:
-      required: true
-
-  - type: textarea
-    id: notes
-    attributes:
-      label: "📝 추가 참고사항"
-      description: "구현 시 참고할 문서나 예시 코드 링크 등"
-      placeholder: |
-        ## 참고 문서
-        - JPA 어노테이션 가이드: [링크]
-        - 프로젝트 코딩 컨벤션: [링크]
-        
-        ## 예시 코드
-        - 기존 Entity 클래스: `src/main/java/com/example/spring/entity/Book.java`
