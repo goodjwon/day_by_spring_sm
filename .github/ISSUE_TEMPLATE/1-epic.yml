@@ -1,62 +1,40 @@
-name: "🎯 Epic - 대기능 단위"
-description: "여러 개의 Story를 포함하는 큰 기능 단위 Epic"
+name: 🏗️ Epic
+description: 큰 기능 단위의 개발 작업을 위한 Epic 이슈
 title: "[EPIC] "
-labels: ["epic", "status-todo"]
-assignees: []
+labels: ["epic"]
+projects: ["day-by-spring"]
 body:
-  - type: input
-    id: epic-name
+  - type: markdown
     attributes:
-      label: "📋 Epic 이름"
-      description: "구현할 대기능의 이름을 입력하세요"
-      placeholder: "예: 회원 관리 시스템"
-    validations:
-      required: true
-
-  - type: textarea
-    id: epic-overview
-    attributes:
-      label: "🎯 Epic 개요"
-      description: "이 Epic이 달성하고자 하는 목표와 범위를 설명해주세요"
-      placeholder: |
-        이 Epic의 목적과 범위를 설명하세요.
-        - 해결하려는 문제
-        - 기대하는 결과
-        - 포함되는 주요 기능들
-    validations:
-      required: true
-
-  - type: textarea
-    id: success-criteria
-    attributes:
-      label: "✅ 성공 기준 (Definition of Done)"
-      description: "Epic이 완료되었다고 판단할 수 있는 기준들"
-      placeholder: |
-        - [ ] 모든 하위 Story 완료
-        - [ ] 통합 테스트 통과
-        - [ ] 성능 요구사항 달성
-        - [ ] 문서화 완료
-    validations:
-      required: true
-
-  - type: textarea
-    id: user-stories
-    attributes:
-      label: "📋 포함될 User Stories"
-      description: "이 Epic에 포함될 하위 Story들을 나열해주세요"
-      placeholder: |
-        - [ ] #이슈번호 - Story 이름
-        - [ ] #이슈번호 - Story 이름
-        - [ ] #이슈번호 - Story 이름
-    validations:
-      required: true
+      value: |
+        # 🏗️ Epic Issue Template
+        
+        큰 기능 단위의 개발 작업을 정의하고 관리하기 위한 템플릿입니다.
+        Epic은 여러 개의 Story로 구성됩니다.
 
   - type: input
-    id: timeline
+    id: epic-title
     attributes:
-      label: "📅 예상 완료 일정"
-      description: "Epic 완료 목표 일정"
-      placeholder: "예: 2024-02-15"
+      label: "📋 Epic 제목"
+      description: "Epic의 명확한 제목을 입력하세요"
+      placeholder: "예: 회원 관리 시스템 구현"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: "🏢 도메인"
+      description: "Epic이 속하는 도메인을 선택하세요"
+      options:
+        - member
+        - book
+        - order
+        - loan
+        - payment
+        - statistics
+        - system
+        - infrastructure
     validations:
       required: true
 
@@ -66,11 +44,59 @@ body:
       label: "🔥 우선순위"
       description: "Epic의 우선순위를 선택하세요"
       options:
-        - "높음 (즉시 시작)"
-        - "보통 (다음 스프린트)"
-        - "낮음 (백로그)"
+        - critical
+        - high
+        - medium
+        - low
     validations:
       required: true
+
+  - type: textarea
+    id: epic-description
+    attributes:
+      label: "📝 Epic 설명"
+      description: "Epic의 목적과 전체적인 개요를 설명하세요"
+      placeholder: |
+        ## Epic 목적
+        - 이 Epic을 통해 달성하고자 하는 비즈니스 목표를 설명하세요
+        
+        ## 범위
+        - 포함되는 기능들을 간략히 나열하세요
+        - 포함되지 않는 것들도 명시하세요
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "✅ Epic 완료 조건"
+      description: "Epic이 완료되었다고 판단할 수 있는 조건들을 나열하세요"
+      placeholder: |
+        - [ ] 모든 하위 Story가 완료됨
+        - [ ] 통합 테스트 통과
+        - [ ] 성능 요구사항 만족
+        - [ ] 보안 검토 완료
+        - [ ] 문서화 완료
+    validations:
+      required: true
+
+  - type: input
+    id: estimated-effort
+    attributes:
+      label: "⏱️ 예상 개발 기간"
+      description: "Epic 완료까지 예상되는 기간 (예: 2주, 1개월)"
+      placeholder: "예: 3주"
+
+  - type: textarea
+    id: related-stories
+    attributes:
+      label: "📋 관련 Story 목록"
+      description: "이 Epic에 포함될 Story들을 나열하세요 (생성 후 링크 업데이트)"
+      placeholder: |
+        - [ ] Story 1: 회원 등록 기능
+        - [ ] Story 2: 회원 조회 기능
+        - [ ] Story 3: 회원 수정 기능
+        - [ ] Story 4: 회원 삭제 기능
 
   - type: textarea
     id: dependencies
@@ -78,38 +104,28 @@ body:
       label: "🔗 의존성"
       description: "이 Epic이 의존하는 다른 Epic이나 외부 요소들"
       placeholder: |
-        선행 작업:
-        - Epic #번호: 기반 시스템 구축
+        ## 선행 요구사항
+        - 데이터베이스 스키마 설계 완료
+        - 인증/인가 시스템 구축
         
-        후속 작업:
-        - Epic #번호: 고도화 기능
-    validations:
-      required: false
+        ## 관련 Epic
+        - #123 (Epic: 기초 인프라 구축)
 
   - type: textarea
     id: risks
     attributes:
-      label: "⚠️ 리스크 및 고려사항"
-      description: "Epic 진행 시 예상되는 리스크나 특별히 고려할 사항들"
+      label: "⚠️ 위험 요소"
+      description: "Epic 진행 중 발생할 수 있는 위험 요소들과 대응 방안"
       placeholder: |
-        기술적 리스크:
-        - 성능 이슈 가능성
-        - 복잡한 비즈니스 로직
+        ## 기술적 위험
+        - 성능 이슈 가능성 → 성능 테스트 조기 실시
         
-        일정 리스크:
-        - 새로운 기술 학습 필요
-        - 외부 의존성
-    validations:
-      required: false
+        ## 일정 위험
+        - 외부 API 의존성 → 대체 방안 준비
 
-  - type: textarea
-    id: learning-goals
+  - type: input
+    id: milestone
     attributes:
-      label: "🎓 학습 목표"
-      description: "이 Epic을 통해 학습하고자 하는 기술이나 개념들"
-      placeholder: |
-        - Spring Data JPA 고급 기능
-        - 캐싱 전략
-        - 성능 최적화 기법
-    validations:
-      required: false
+      label: "🎯 마일스톤"
+      description: "이 Epic이 속할 마일스톤"
+      placeholder: "예: Phase 1: Core Features"
