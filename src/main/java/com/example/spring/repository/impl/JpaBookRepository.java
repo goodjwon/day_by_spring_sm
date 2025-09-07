@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
  * - 복잡한 JDBC 코드 제거
  */
 @Repository
-public interface JpaBookRepository extends JpaRepository<Book, Long>, BookRepository {
+public interface JpaBookRepository extends BookRepository {
     // JpaRepository가 기본 CRUD 메서드들을 자동으로 제공
     // findById, save, findAll, deleteById 등이 자동으로 구현됨
 }
