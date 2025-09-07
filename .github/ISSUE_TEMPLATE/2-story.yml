@@ -1,46 +1,49 @@
-name: "📋 Story - 기능 개발"
-description: "구체적인 기능 하나를 구현하는 Story"
+name: 📖 Story
+description: 사용자 관점의 기능을 위한 Story 이슈
 title: "[STORY] "
-labels: ["story", "status-todo"]
-assignees: []
+labels: ["story"]
+projects: ["day-by-spring"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        # 📖 Story Issue Template
+        
+        사용자 관점에서의 기능을 정의하고 관리하기 위한 템플릿입니다.
+        Story는 여러 개의 Task로 구성됩니다.
+
   - type: input
     id: story-title
     attributes:
       label: "📋 Story 제목"
-      description: "구현할 구체적인 기능명"
-      placeholder: "예: 회원 단건 조회 API 구현, 도서 검색 기능 구현, 주문 생성 API 구현"
+      description: "Story의 명확한 제목을 입력하세요"
+      placeholder: "예: 회원 기본 CRUD 구현"
+    validations:
+      required: true
+
+  - type: input
+    id: parent-epic
+    attributes:
+      label: "🏗️ 상위 Epic"
+      description: "이 Story가 속하는 Epic 번호를 입력하세요"
+      placeholder: "예: #10"
     validations:
       required: true
 
   - type: dropdown
-    id: related-epic
+    id: domain
     attributes:
-      label: "🎯 관련 Epic"
-      description: "이 Story가 속할 Epic을 선택하세요"
+      label: "🏢 도메인"
+      description: "Story가 속하는 도메인을 선택하세요"
       options:
-        - "Epic #1: 회원 관리 시스템"
-        - "Epic #2: 도서 관리 시스템"
-        - "Epic #3: 주문 관리 시스템"
-        - "Epic #4: 대여 관리 시스템"
-        - "Epic #5: 결제 시스템"
-        - "Epic #6: 통계 및 리포트 시스템"
-        - "기타 (댓글에 명시)"
-      default: 0
-    validations:
-      required: true
-
-  - type: dropdown
-    id: story-size
-    attributes:
-      label: "📏 Story 크기"
-      description: "예상 작업 규모 및 기간"
-      options:
-        - "XS - 1-2시간 (간단한 수정/추가)"
-        - "S - 반나절 (작은 기능)"
-        - "M - 1일 (보통 기능)"
-        - "L - 2-3일 (복잡한 기능)"
-        - "XL - 1주일 이상 (Epic으로 분할 필요)"
+        - member
+        - book
+        - order
+        - loan
+        - payment
+        - statistics
+        - system
+        - infrastructure
     validations:
       required: true
 
@@ -48,214 +51,117 @@ body:
     id: priority
     attributes:
       label: "🔥 우선순위"
-      description: "Story의 중요도와 긴급도"
+      description: "Story의 우선순위를 선택하세요"
       options:
-        - "🔥 Critical - 즉시 처리 필요"
-        - "⚡ High - 이번 Sprint에서 처리"
-        - "📋 Medium - 다음 Sprint에서 처리"
-        - "⏳ Low - 백로그 관리"
+        - critical
+        - high
+        - medium
+        - low
     validations:
       required: true
 
   - type: textarea
     id: user-story
     attributes:
-      label: "👤 User Story"
-      description: "사용자 관점에서의 요구사항"
+      label: "👤 사용자 스토리"
+      description: "사용자 관점에서 Story를 작성하세요"
       placeholder: |
-        **As a** [사용자 유형]
+        **As a** [사용자 역할]
         **I want** [원하는 기능]
-        **So that** [기대하는 결과/이유]
+        **So that** [기대하는 이익/목적]
         
-        **예시:**
-        As a 관리자
-        I want 회원 정보를 조회할 수 있다
-        So that 고객 문의 시 빠르게 지원할 수 있다
+        예시:
+        **As a** 도서관 관리자
+        **I want** 회원 정보를 등록, 조회, 수정, 삭제할 수 있는 기능
+        **So that** 회원을 효율적으로 관리할 수 있다
+    validations:
+      required: true
+
+  - type: textarea
+    id: story-description
+    attributes:
+      label: "📝 Story 상세 설명"
+      description: "Story의 세부 내용과 요구사항을 설명하세요"
+      placeholder: |
+        ## 기능 개요
+        - 이 Story에서 구현할 기능들을 나열하세요
         
-        As a 사용자
-        I want 도서를 검색할 수 있다
-        So that 원하는 책을 쉽게 찾을 수 있다
+        ## 비즈니스 요구사항
+        - 비즈니스 로직과 규칙들을 설명하세요
+        
+        ## 기술적 요구사항
+        - 기술적 제약사항이나 요구사항을 나열하세요
     validations:
       required: true
 
   - type: textarea
     id: acceptance-criteria
     attributes:
-      label: "✅ 인수 조건 (Acceptance Criteria)"
-      description: "이 Story가 완료되었다고 판단할 수 있는 구체적인 조건들"
+      label: "✅ 인수 기준"
+      description: "Story가 완료되었다고 판단할 수 있는 구체적인 조건들"
       placeholder: |
-        **기능적 요구사항:**
-        - [ ] 정상 케이스 동작 확인
-        - [ ] 에러 케이스 적절한 처리 (400, 404, 500 등)
-        - [ ] 입력값 검증 및 보안 체크
+        **Given** [전제 조건]
+        **When** [사용자 행동]
+        **Then** [예상 결과]
         
-        **성능 요구사항:**
-        - [ ] 응답 시간 3초 이내
-        - [ ] 동시 요청 처리 가능
-        
-        **개발 완료 조건:**
-        - [ ] 단위 테스트 작성 완료
-        - [ ] 통합 테스트 통과
-        - [ ] 코드 리뷰 완료
+        예시:
+        - [ ] **Given** 관리자로 로그인했을 때, **When** 회원 등록 폼에 유효한 정보를 입력하면, **Then** 새 회원이 성공적으로 등록된다
+        - [ ] **Given** 회원 목록 페이지에서, **When** 특정 회원을 클릭하면, **Then** 해당 회원의 상세 정보가 표시된다
+        - [ ] **Given** 회원 수정 페이지에서, **When** 정보를 수정하고 저장하면, **Then** 변경사항이 데이터베이스에 반영된다
+        - [ ] **Given** 회원을 삭제할 때, **When** 삭제 확인을 하면, **Then** 해당 회원이 시스템에서 제거된다
     validations:
       required: true
-
-  - type: dropdown
-    id: api-method
-    attributes:
-      label: "🌐 HTTP 메서드"
-      description: "구현할 API의 HTTP 메서드 (API가 아닌 경우 '해당없음' 선택)"
-      options:
-        - "GET - 조회 (단건/목록)"
-        - "POST - 생성 (등록/추가)"
-        - "PUT - 전체 수정"
-        - "PATCH - 부분 수정"
-        - "DELETE - 삭제"
-        - "해당없음 (API가 아닌 작업)"
-    validations:
-      required: false
 
   - type: input
-    id: api-endpoint
+    id: estimated-effort
     attributes:
-      label: "🔗 API 엔드포인트"
-      description: "구현할 API의 URL 패턴 (API가 아닌 경우 생략 가능)"
-      placeholder: "예: /api/members/{id}, /api/books?page=0&size=20, /api/orders"
-    validations:
-      required: false
+      label: "⏱️ 예상 소요시간"
+      description: "Story 완료까지 예상되는 시간 (예: 16시간, 2일)"
+      placeholder: "예: 20시간"
 
   - type: textarea
-    id: technical-details
+    id: related-tasks
     attributes:
-      label: "🔧 기술적 구현 사항"
-      description: "구현에 필요한 기술적 세부사항"
+      label: "📋 관련 Task 목록"
+      description: "이 Story에 포함될 Task들을 나열하세요 (생성 후 링크 업데이트)"
       placeholder: |
-        **구현할 파일/클래스:**
-        - [ ] Service: 비즈니스 로직 구현
-        - [ ] Controller: API 엔드포인트 구현
-        - [ ] DTO: 요청/응답 객체 (필요 시)
-        - [ ] Exception: 커스텀 예외 (필요 시)
-        
-        **사용할 기술:**
-        - Spring Data JPA
-        - Bean Validation
-        - Spring Cache (필요 시)
-        - 기타 필요한 라이브러리
-        
-        **데이터베이스 변경사항:**
-        - 테이블 생성/수정 (있다면)
-        - 인덱스 추가 (필요 시)
-        
-        **설정 변경:**
-        - application.yml 수정 사항
-        - Bean 설정 추가 사항
-    validations:
-      required: true
+        - [ ] Task 1: Member Entity 설계 및 구현
+        - [ ] Task 2: MemberRepository 인터페이스 구현
+        - [ ] Task 3: MemberService 비즈니스 로직 구현
+        - [ ] Task 4: MemberController REST API 구현
+        - [ ] Task 5: 입력 검증 및 예외 처리
 
   - type: textarea
-    id: test-scenarios
+    id: ui-requirements
     attributes:
-      label: "🧪 테스트 시나리오"
-      description: "작성할 테스트 케이스들"
+      label: "🎨 UI/UX 요구사항"
+      description: "화면 구성이나 사용자 경험과 관련된 요구사항"
       placeholder: |
-        **단위 테스트 (Service Layer):**
-        - [ ] 정상 동작 성공 케이스
-        - [ ] 예외 상황 처리 케이스
-        - [ ] 경계값 테스트 케이스
+        ## 화면 구성
+        - 필요한 화면들과 레이아웃을 설명하세요
         
-        **컨트롤러 테스트 (MockMvc):**
-        - [ ] 정상 요청 시 200/201 응답
-        - [ ] 잘못된 요청 시 400 응답
-        - [ ] 존재하지 않는 리소스 시 404 응답
+        ## 사용자 경험
+        - 사용성과 관련된 요구사항을 나열하세요
         
-        **통합 테스트:**
-        - [ ] 실제 DB 연동 전체 플로우 테스트
-        
-        **성능 테스트 (필요 시):**
-        - [ ] 응답시간 요구사항 만족 확인
-        - [ ] 동시 요청 처리 확인
-    validations:
-      required: true
+        ## 반응형
+        - 모바일/태블릿 대응 요구사항
 
   - type: textarea
     id: dependencies
     attributes:
-      label: "🔗 의존성 및 순서"
-      description: "이 Story가 의존하는 다른 Story나 작업들"
+      label: "🔗 의존성"
+      description: "이 Story가 의존하는 다른 Story나 외부 요소들"
       placeholder: |
-        **선행 작업 (이것들이 먼저 완료되어야 함):**
-        - [ ] 기반 Entity 설계 완료
-        - [ ] 관련 Repository 구현 완료
-        - [ ] 필요한 DTO 클래스 구현
+        ## 선행 Story
+        - #123 (Story: 기본 인증 시스템)
         
-        **후속 작업 (이 작업 완료 후 진행 가능):**
-        - [ ] 관련 기능들 (목록 조회, 수정 등)
-        - [ ] 연동되는 다른 Epic의 기능들
-        
-        **병렬 진행 가능 (독립적으로 진행 가능):**
-        - [ ] 다른 도메인의 독립적 기능들
-        
-        **차단 요소 (Blockers):**
-        - [ ] 현재 차단하는 요소가 있다면 명시
-    validations:
-      required: false
+        ## 외부 의존성
+        - 데이터베이스 테이블 생성
+        - 외부 API 연동
 
-  - type: textarea
-    id: definition-of-done
+  - type: input
+    id: milestone
     attributes:
-      label: "🎯 완료 조건 (Definition of Done)"
-      description: "이 Story가 정말로 '완료'되었다고 할 수 있는 체크리스트"
-      placeholder: |
-        **개발 완료:**
-        - [ ] 모든 인수 조건 충족
-        - [ ] 코드 구현 완료
-        - [ ] 예외 처리 구현 완료
-        
-        **테스트 완료:**
-        - [ ] 모든 테스트 케이스 작성 및 통과
-        - [ ] 테스트 커버리지 80% 이상
-        - [ ] 통합 테스트 통과
-        
-        **품질 검증:**
-        - [ ] 코드 리뷰 완료
-        - [ ] 성능 요구사항 달성
-        - [ ] 보안 검토 완료
-        
-        **문서화:**
-        - [ ] API 문서 업데이트 (해당 시)
-        - [ ] README 업데이트 (필요 시)
-        - [ ] 주요 변경사항 문서화
-        
-        **배포 준비:**
-        - [ ] 개발 환경에서 정상 동작 확인
-        - [ ] 로그 설정 적절히 구성
-        - [ ] Epic 담당자 승인
-    validations:
-      required: true
-
-  - type: textarea
-    id: additional-notes
-    attributes:
-      label: "📝 추가 참고사항"
-      description: "구현 시 특별히 고려해야 할 사항이나 참고 링크"
-      placeholder: |
-        **특별 고려사항:**
-        - 향후 확장 가능성 고려
-        - 성능 최적화 방안
-        - 보안 관련 주의사항
-        
-        **참고 문서:**
-        - 관련 Spring 공식 문서 링크
-        - 프로젝트 아키텍처 문서
-        - 비슷한 기능 구현 참고 사례
-        
-        **학습 목표:**
-        - 이 Story를 통해 학습하고자 하는 기술이나 개념
-        - 적용해보고 싶은 디자인 패턴이나 기법
-        
-        **향후 개선 계획:**
-        - 추후 고도화 방향
-        - 성능 개선 아이디어
-        - 추가 기능 확장 가능성
-    validations:
-      required: false
+      label: "🎯 마일스톤"
+      description: "이 Story가 속할 마일스톤"
+      placeholder: "예: Phase 1: 회원 & 도서 관리"

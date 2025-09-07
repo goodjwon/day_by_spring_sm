@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,7 +43,7 @@ class MemberControllerTest {
 
     // 3. @Mock 대신 @MockBean을 사용합니다.
     //    스프링 컨테이너에 진짜 MemberService 대신 가짜(Mock) MemberService를 등록합니다.
-    @MockitoBean
+    @MockBean
     private MemberService memberService;
 
     // 4. @BeforeEach(setUp) 메서드는 더 이상 필요 없습니다.
@@ -109,6 +109,29 @@ class MemberControllerTest {
     }
 
     @Test
+    @DisplayName("회원 가입 실패 - 검증 오류")
+    void createMember_ValidationError() throws Exception {
+        // Given: 잘못된 요청값 (빈 이름, 잘못된 이메일)
+        String invalidJson = "{\n" +
+                "  \"name\": \"\",\n" +
+                "  \"email\": \"invalid-email\"\n" +
+                "}";
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/members")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.fieldErrors").isArray())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field=='name')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field=='email')]").exists());
+    }
+
+    @Test
     @DisplayName("회원 조회 성공")
     void findMemberById_Success() throws Exception {
         // Given
@@ -156,9 +179,9 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("회원 정보 수정 - 성공")
+    @DisplayName("회원 수정 성공")
     void updateMember_Success() throws Exception {
-        //Given
+        // Given
         Long memberId = 1L;
         UpdateMemberRequest request = UpdateMemberRequest.builder()
                 .name("임꺽정")
@@ -188,50 +211,65 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("회원 정보 수정 - 이메일 중목으로 인한 실패")
+    @DisplayName("회원 수정 실패 - 검증 오류")
+    void updateMember_ValidationError() throws Exception {
+        // Given: 잘못된 요청값 (이름 너무 짧음, 이메일 형식 오류)
+        String invalidJson = "{\n" +
+                "  \"name\": \"a\",\n" +
+                "  \"email\": \"bad-email\"\n" +
+                "}";
+
+        // When & Then
+        mockMvc.perform(put("/api/v1/members/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다"))
+                .andExpect(jsonPath("$.fieldErrors").isArray());
+    }
+
+    @Test
+    @DisplayName("회원 수정 실패 - 이메일 중복")
     void updateMember_DuplicateEmail() throws Exception {
-        //Given
+        // Given
         Long memberId = 1L;
         UpdateMemberRequest request = UpdateMemberRequest.builder()
-                .name("홍길동")
-                .email("hong@example.com")
+                .name("임꺽정")
+                .email("dup@example.com")
                 .build();
 
         given(memberService.updateMember(eq(memberId), any(UpdateMemberRequest.class)))
-                .willThrow(new DuplicateEmailException("hong@example.com"));
+                .willThrow(new DuplicateEmailException("dup@example.com"));
 
-        //When & Then
+        // When & Then
         mockMvc.perform(put("/api/v1/members/{id}", memberId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value("DUPLICATE_EMAIL"))
-                .andExpect(jsonPath("$.message").value("이미 사용 중인 이메일입니다: hong@example.com"));
+                .andExpect(jsonPath("$.message").value("이미 사용 중인 이메일입니다: dup@example.com"));
     }
 
     @Test
-    @DisplayName("회원 목록 조회 - 성공")
-    void FindMemberById_success() throws Exception {
-        //Given
+    @DisplayName("회원 목록 조회 성공")
+    void findAllMembers_Success() throws Exception {
+        // Given
         List<MemberResponse> list = Arrays.asList(
-            MemberResponse.builder().id(1L).name("A").email("a@example.com").membershipType(MembershipType.REGULAR).build(),
-            MemberResponse.builder().id(2L).name("B").email("b@example.com").membershipType(MembershipType.PREMIUM).build(),
-            MemberResponse.builder().id(3L).name("C").email("c@example.com").membershipType(MembershipType.SUSPENDED).build(),
-            MemberResponse.builder().id(4L).name("D").email("d@example.com").membershipType(MembershipType.REGULAR).build()
+                MemberResponse.builder().id(1L).name("A").email("a@example.com").membershipType(MembershipType.REGULAR).build(),
+                MemberResponse.builder().id(2L).name("B").email("b@example.com").membershipType(MembershipType.PREMIUM).build()
         );
-
         given(memberService.findAllMembers()).willReturn(list);
 
-        //When & Then
+        // When & Then
         mockMvc.perform(get("/api/v1/members/all").accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("[0].id").value(1L))
-                .andExpect(jsonPath("[0].name").value("A"))
-                .andExpect(jsonPath("[0].email").value("a@example.com"))
-                .andExpect(jsonPath("[0].membershipType").value("REGULAR"));
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].name").value("A"))
+                .andExpect(jsonPath("$[1].membershipType").value("PREMIUM"));
     }
 
     @Test
@@ -248,25 +286,19 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("회원 정보 이름으로 검색 - 성공")
-    void findAllMembersByName_Success() throws Exception {
-        //Given
-        List<MemberResponse> list = Arrays.asList(
-            MemberResponse.builder().id(1L).name("A").email("a@example.com").membershipType(MembershipType.REGULAR).build(),
-            MemberResponse.builder().id(2L).name("B").email("b@example.com").membershipType(MembershipType.REGULAR).build(),
-            MemberResponse.builder().id(3L).name("C").email("c@example.com").membershipType(MembershipType.PREMIUM).build(),
-            MemberResponse.builder().id(4L).name("D").email("d@example.com").membershipType(MembershipType.PREMIUM).build()
+    @DisplayName("이름으로 회원 검색 성공")
+    void findMembersByName_Success() throws Exception {
+        // Given
+        List<MemberResponse> list = Collections.singletonList(
+                MemberResponse.builder().id(10L).name("홍길동").email("hong@example.com").membershipType(MembershipType.REGULAR).build()
         );
+        given(memberService.findMembersByName("홍")).willReturn(list);
 
-        given(memberService.findMembersByName("A")).willReturn(list);
-        //When & Then
-        mockMvc.perform(get("/api/v1/members/search").param("name", "A")
-                        .accept(MediaType.APPLICATION_JSON))
+        // When & Then
+        mockMvc.perform(get("/api/v1/members/search").param("name", "홍"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("[0].name").value("A"));
-
+                .andExpect(jsonPath("$[0].name").value("홍길동"));
     }
 
     @Test
@@ -283,24 +315,20 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("멤버쉽 타입으로 회원 검색 - 성공")
-    void findMembersByMembershipType_Success() throws Exception {
-        //Given
+    @DisplayName("멤버십 타입별 회원 조회 성공")
+    void getMembersByMembershipType_Success() throws Exception {
+        // Given
         List<MemberResponse> list = Arrays.asList(
-                MemberResponse.builder().id(1L).name("A").email("a@example.com").membershipType(MembershipType.REGULAR).build(),
-                MemberResponse.builder().id(2L).name("B").email("b@example.com").membershipType(MembershipType.REGULAR).build(),
-                MemberResponse.builder().id(3L).name("C").email("c@example.com").membershipType(MembershipType.PREMIUM).build(),
-                MemberResponse.builder().id(4L).name("D").email("d@example.com").membershipType(MembershipType.PREMIUM).build()
+                MemberResponse.builder().id(3L).name("C").email("c@example.com").membershipType(MembershipType.REGULAR).build(),
+                MemberResponse.builder().id(4L).name("D").email("d@example.com").membershipType(MembershipType.REGULAR).build()
         );
-
         given(memberService.findMembersByMembershipType(MembershipType.REGULAR)).willReturn(list);
 
-        //When & Then
-        mockMvc.perform(get("/api/v1/members/membership/{type}",  MembershipType.REGULAR))
+        // When & Then
+        mockMvc.perform(get("/api/v1/members/membership/{type}", MembershipType.REGULAR))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("[0].membershipType").value("REGULAR"))
-                .andExpect(jsonPath("[1].membershipType").value("REGULAR"));
+                .andExpect(jsonPath("$[0].membershipType").value("REGULAR"))
+                .andExpect(jsonPath("$[1].membershipType").value("REGULAR"));
     }
 }

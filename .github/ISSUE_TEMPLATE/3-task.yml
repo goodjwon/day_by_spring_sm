@@ -1,0 +1,117 @@
+name: ⚙️ Task
+description: 구체적인 개발 작업을 위한 Task 이슈
+title: "[TASK] "
+labels: ["task"]
+projects: ["day-by-spring"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 📖 Task Issue Template
+        
+        구체적인 개발 작업을 정의하고 관리하기 위한 템플릿입니다.
+
+  - type: input
+    id: parent-story
+    attributes:
+      label: "📚 Story"
+      description: "이 Task가 속하는 Story 번호를 입력하세요"
+      placeholder: "예: [STORY] 도서 기본 CRUD 구현 (#23)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: "📊 상태"
+      description: "Task의 현재 상태"
+      options:
+        - "🔄 진행중"
+        - "⏳ 대기중"
+        - "✅ 완료"
+        - "🚫 중단"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "🔥 우선순위"
+      description: "Task의 우선순위를 선택하세요"
+      options:
+        - "🔥 Critical"
+        - "🟡 High"
+        - "🟢 Medium"
+        - "🔵 Low"
+    validations:
+      required: true
+
+  - type: input
+    id: estimated-effort
+    attributes:
+      label: "⏱️ 예상 소요시간"
+      description: "Task 완료까지 예상되는 시간"
+      placeholder: "예: 5시간"
+
+  - type: textarea
+    id: task-description
+    attributes:
+      label: "📝 Task 설명"
+      description: "Task의 구체적인 내용과 요구사항을 설명하세요"
+      placeholder: |
+        도서 정보를 저장할 JPA Entity를 설계하고 구현합니다.
+        ISBN, 제목, 저자, 가격, 재고 수량 등의 필드와 적절한 제약조건을 포함합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-requirements
+    attributes:
+      label: "🎯 구현 요구사항"
+      description: "Task에서 구현해야 할 구체적인 요구사항들"
+      placeholder: |
+        - [ ] Book 엔티티 클래스 생성
+        - [ ] 필드 정의 (id, title, author, isbn, price, available, createdDate)
+        - [ ] JPA 어노테이션 적용
+        - [ ] ISBN 유니크 제약조건 설정
+        - [ ] Soft Delete 필드 추가 (deletedAt)
+        - [ ] Lombok 어노테이션 적용
+        - [ ] Audit 필드 추가
+    validations:
+      required: true
+
+  - type: textarea
+    id: subtasks
+    attributes:
+      label: "📋 Sub-task Issues"
+      description: "이 Task에 포함될 Sub-task들을 나열하세요"
+      placeholder: |
+        - [ ] 기본 필드 및 어노테이션 구현
+        - [ ] ISBN 검증 로직 구현
+        - [ ] Soft Delete 기능 구현
+        - [ ] 단위 테스트 작성
+
+  - type: textarea
+    id: tech-stack
+    attributes:
+      label: "🔧 기술 스택"
+      description: "이 Task에서 사용할 기술, 라이브러리, 프레임워크"
+      placeholder: |
+        - Spring Data JPA
+        - Lombok
+        - Bean Validation
+        - Soft Delete Pattern
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: "✅ Definition of Done"
+      description: "Task가 완료되었다고 판단할 수 있는 조건들"
+      placeholder: |
+        - [ ] Book 엔티티 구현 완료
+        - [ ] ISBN 유니크 제약조건 설정
+        - [ ] Soft Delete 기능 구현
+        - [ ] 단위 테스트 작성
+        - [ ] 코드 리뷰 완료
+    validations:
+      required: true

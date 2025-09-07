@@ -1,0 +1,111 @@
+name: 🔧 Sub-task
+description: 세부 작업을 위한 Sub-task 이슈
+title: "[SUB-TASK] "
+labels: ["sub-task"]
+projects: ["day-by-spring"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 📖 Sub-task Issue Template
+        
+        Task를 더 작은 단위로 나눈 세부 작업을 정의하고 관리하기 위한 템플릿입니다.
+
+  - type: input
+    id: parent-task
+    attributes:
+      label: "⚙️ Task"
+      description: "이 Sub-task가 속하는 Task 번호를 입력하세요"
+      placeholder: "예: [TASK] Book Entity 설계 및 구현 (#27)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: "📊 상태"
+      description: "Sub-task의 현재 상태"
+      options:
+        - "🔄 진행중"
+        - "⏳ 대기중"
+        - "✅ 완료"
+        - "🚫 중단"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "🔥 우선순위"
+      description: "Sub-task의 우선순위를 선택하세요"
+      options:
+        - "🔥 Critical"
+        - "🟡 High"
+        - "🟢 Medium"
+        - "🔵 Low"
+    validations:
+      required: true
+
+  - type: input
+    id: estimated-effort
+    attributes:
+      label: "⏱️ 예상 소요시간"
+      description: "Sub-task 완료까지 예상되는 시간"
+      placeholder: "예: 2시간"
+
+  - type: textarea
+    id: subtask-description
+    attributes:
+      label: "📝 Sub-task 설명"
+      description: "Sub-task의 구체적인 작업 내용을 설명하세요"
+      placeholder: |
+        Book 엔티티의 기본 필드를 정의하고 JPA 어노테이션을 적용합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-details
+    attributes:
+      label: "🎯 구현 세부사항"
+      description: "구현할 코드의 예시나 세부 사항을 제공하세요"
+      placeholder: |
+        ```java
+        @Entity
+        @Table(name = "book")
+        public class Book {
+            @Id
+            @GeneratedValue(strategy = GenerationType.IDENTITY)
+            private Long id;
+        
+            @Column(nullable = false, length = 200)
+            private String title;
+        
+            @Column(nullable = false, length = 100)
+            private String author;
+        
+            @Column(nullable = false, unique = true, length = 13)
+            private String isbn;
+        
+            @Column(nullable = false, precision = 10, scale = 2)
+            private BigDecimal price;
+        
+            @Column(nullable = false)
+            private Boolean available = true;
+        
+            @Column(name = "created_date", nullable = false)
+            private LocalDateTime createdDate;
+        }
+        ```
+
+  - type: textarea
+    id: completion-criteria
+    attributes:
+      label: "✅ 완료 조건"
+      description: "Sub-task가 완료되었다고 판단할 수 있는 구체적인 조건들"
+      placeholder: |
+        - [ ] 기본 필드 정의 (id, title, author, isbn, price, available, createdDate)
+        - [ ] JPA 어노테이션 적용
+        - [ ] 테이블명 및 컬럼명 설정
+        - [ ] 제약조건 설정 (nullable, unique, precision)
+    validations:
+      required: true
