@@ -3,7 +3,6 @@ package com.example.spring.entity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 
 import jakarta.validation.ConstraintViolation;
@@ -30,6 +29,28 @@ public class BookTest {
         }
     }
 
+    @Nested
+    @DisplayName("toString 테스트")
+    class ToStringTest {
+        @Test
+        @DisplayName("toString 메서드가 주요 필드 정보를 포함함")
+        void toStringShouldIncludeMajorFields() {
+            //Given
+            Book book = Book.builder()
+                    .title("Test Book")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            //When
+            String toStringResult = book.toString();
+            //Then
+            assertThat(toStringResult)
+                    .contains("title=Test Book")
+                    .contains("author=Test Author")
+                    .contains("isbn=9781234567890");
+        }
+    }
 
     @Nested
     @DisplayName("Book 생성 테스트")
@@ -102,8 +123,22 @@ public class BookTest {
     @DisplayName("Soft Delete 기능 테스트")
     class SoftDeleteTest {
 
-//        @Test
-//        @DisplayName("생성된 Book은 삭제되지 않은 상태")
+        @Test
+        @DisplayName("생성된 Book은 삭제되지 않은 상태")
+        void newBookShouldNotBeDeleted() {
+            //Given
+            Book book = Book.builder()
+                    .title("Test Book")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            //When
+            //Then
+            assertThat(book.isDeleted()).isFalse();
+            assertThat(book.getDeletedDate()).isNull();
+            assertThat(book.getAvailable()).isTrue();
+        }
 
         @Test
         @DisplayName("markAsDeleted() 호출 시 삭제 상태로 변경")
@@ -127,17 +162,121 @@ public class BookTest {
 
         }
 
-//        @Test
-//        @DisplayName("restore() 호출 시 삭제 상태 해제")
-//
-//        @Test
-//        @DisplayName("삭제 후 복원 시 deletedDate가 정확히 초기화됨")
-//
+        @Test
+        @DisplayName("restore() 호출 시 삭제 상태 해제")
+        void restoreShouldClearDeleteState() {
+            //Given
+            Book book = Book.builder()
+                    .title("Test Book")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            book.markAsDeleted();
+            assertThat(book.isDeleted()).isTrue();
+            //When
+            book.restore();
+            //Then
+            assertThat(book.isDeleted()).isFalse();
+            assertThat(book.getAvailable()).isTrue();
+        }
+
+        @Test
+        @DisplayName("삭제 후 복원 시 deletedDate가 정확히 초기화됨")
+        void deletedDateShouldBeNullAfterRestore() {
+            //Given
+            Book book = Book.builder()
+                    .title("Test Book")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            book.markAsDeleted();
+            assertThat(book.getDeletedDate()).isNotNull();
+            //When
+            book.restore();
+            //Then
+            assertThat(book.getDeletedDate()).isNull();
+        }
+
     }
 
     @Nested
     @DisplayName("Bean Validation 테스트")
     class ValidationTest {
+        @Test
+        @DisplayName("가격이 0이면 검증 성공")
+        void priceCanBeZero() {
+            //Given
+            Book book = Book.builder()
+                    .title("Valid Title")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("0.00"))
+                    .build();
+            //When
+            Set<ConstraintViolation<Book>> violations = validator.validate(book);
+            //Then
+            assertThat(violations).isEmpty();
+        }
+
+//        @Test
+//        @DisplayName("유효한 ISBN-13 형식 검증 성공")
+
+        @Test
+        @DisplayName("가격이 음수이면 검증 실패")
+        void priceShouldBePositiveOrZero() {
+            //Given
+            Book book = Book.builder()
+                    .title("Valid Title")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("-5.00"))
+                    .build();
+            //When
+            Set<ConstraintViolation<Book>> violations = validator.validate(book);
+            //Then
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getMessage()).isEqualTo("가격은 0 이상이어야 합니다");
+        }
+
+        @Test
+        @DisplayName("제목이 빈 문자열이면 검증 실패")
+        void titleShouldNotBeEmpty() {
+            //Given
+            Book book = Book.builder()
+                    .title("  ")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            //When
+            Set<ConstraintViolation<Book>> violations = validator.validate(book);
+            //Then
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getMessage()).isEqualTo("도서 제목은 필수입니다");
+        }
+
+        @Test
+        @DisplayName("저자가 공백이면 검증 실패")
+        void authorShouldNotBeBlank() {
+            //Given
+            Book book = Book.builder()
+                    .title("Valid Title")
+                    .author("  ")
+                    .isbn("9781234567890")
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            //When
+            Set<ConstraintViolation<Book>> violations = validator.validate(book);
+            //Then
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getMessage()).isEqualTo("저자는 필수입니다");
+        }
+
+//        @Test
+//        @DisplayName("잘못된 ISBN 형식이면 검증 실패")
+
         @Test
         @DisplayName("제목이 null이면 검증 실패")
         void titleShouldNotBeNull() {
@@ -154,8 +293,44 @@ public class BookTest {
 
             // then
             assertThat(violations).hasSize(1);
-            assertThat(violations.iterator().next().getMessage())
-                    .isEqualTo("도서 제목은 필수입니다");
+            assertThat(violations.iterator().next().getMessage()).isEqualTo("도서 제목은 필수입니다");
         }
+
+        @Test
+        @DisplayName("ISBN이 null이면 검증 실패")
+        void isbnShouldNotBeNull() {
+            //Given
+            Book book = Book.builder()
+                    .title("Valid Title")
+                    .author("Test Author")
+                    .isbn(null)
+                    .price(new BigDecimal("25.00"))
+                    .build();
+            //When
+            Set<ConstraintViolation<Book>> violations = validator.validate(book);
+            //Then
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getMessage()).isEqualTo("ISBN은 필수입니다");
+        }
+
+        @Test
+        @DisplayName("가격이 null이면 검증 실패")
+        void priceShouldNotBeNull() {
+            //Given
+            Book book = Book.builder()
+                    .title("Valid Title")
+                    .author("Test Author")
+                    .isbn("9781234567890")
+                    .price(null)
+                    .build();
+            //When
+            Set<ConstraintViolation<Book>> violations = validator.validate(book);
+            //Then
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getMessage()).isEqualTo("가격은 필수입니다");
+        }
+
+//        @Test
+//        @DisplayName("하이픈이 포함된 ISBN-13 형식 검증 성공")
     }
 }

@@ -12,9 +12,14 @@ class ShippingService {
     }
 }
 
+class CouponService {
+    public void prepareCoupon(String address) {System.out.println("[쿠폰] 발행: " + address + "로 쿠폰을 발행합니다.");}
+}
+
 public class OrderService {
     private final InventoryService inventoryService =  new InventoryService();
     private final ShippingService shippingService = new ShippingService();
+    private final CouponService couponService = new CouponService();
 
     public void placeOrder(String productId, String address) {
         System.out.println("--- 주문 처리를 시작합니다 ---");
@@ -24,6 +29,7 @@ public class OrderService {
         // 다른 서비스들을 직접 호출 (간한 결합)
         inventoryService.updateStock(productId);
         shippingService.prepareShipping(address);
+        couponService.prepareCoupon(address);
         System.out.println("----------------------\n");
     }
 }
