@@ -2,6 +2,9 @@ package com.example.spring.repository;
 
 
 import com.example.spring.entity.Book;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -23,6 +26,19 @@ public class BookRepositoryTest {
     @Autowired
     private BookRepository bookRepository;
 
+    private Book sampleBook;
+
+    @BeforeEach
+    void setUp() {
+        sampleBook = Book.builder()
+                .title("Clean Code")
+                .author("Robert C. Martin")
+                .isbn("9780132350884")
+                .price(new BigDecimal("45.99"))
+                .available(true)
+                .createdDate(LocalDateTime.now())
+                .build();
+    }
 
     @Test
     public void findById_존재하는도서_도서반환() {
@@ -150,5 +166,76 @@ public class BookRepositoryTest {
 
         // Then
         assertThat(foundBook).isNull();
+    }
+
+    @Nested
+    @DisplayName("검색 기능 테스트")
+    class SearchTest {
+
+        @BeforeEach
+        void setUpBooks() {
+            Book cleanCode = Book.builder()
+                    .title("Clean Code")
+                    .author("Robert C. Martin")
+                    .isbn("9780132350884")
+                    .price(new BigDecimal("45.99"))
+                    .createdDate(LocalDateTime.now())
+                    .build();
+
+            Book effectiveJava = Book.builder()
+                    .title("Effective Java")
+                    .author("Joshua Bloch")
+                    .isbn("9780134685991")
+                    .price(new BigDecimal("52.99"))
+                    .createdDate(LocalDateTime.now())
+                    .build();
+
+            Book springInAction = Book.builder()
+                    .title("Spring in Action")
+                    .author("Craig Walls")
+                    .isbn("9781617294945")
+                    .price(new BigDecimal("39.99"))
+                    .createdDate(LocalDateTime.now())
+                    .build();
+
+            entityManager.persistAndFlush(cleanCode);
+            entityManager.persistAndFlush(effectiveJava);
+            entityManager.persistAndFlush(springInAction);
+            entityManager.clear();
+        }
+
+        // Test 구현.
+    }
+
+    @Nested
+    @DisplayName("재고 상태별 테스트")
+    class AvailabilityTest {
+
+        @BeforeEach
+        void setUpBooksWithAvailability() {
+            Book availableBook = Book.builder()
+                    .title("Available Book")
+                    .author("Author A")
+                    .isbn("1111111111111")
+                    .price(new BigDecimal("30.00"))
+                    .available(true)
+                    .createdDate(LocalDateTime.now())
+                    .build();
+
+            Book unavailableBook = Book.builder()
+                    .title("Unavailable Book")
+                    .author("Author B")
+                    .isbn("2222222222222")
+                    .price(new BigDecimal("25.00"))
+                    .available(false)
+                    .createdDate(LocalDateTime.now())
+                    .build();
+
+            entityManager.persistAndFlush(availableBook);
+            entityManager.persistAndFlush(unavailableBook);
+            entityManager.clear();
+        }
+
+        //Test 구현.
     }
 }
