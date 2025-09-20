@@ -1,0 +1,149 @@
+package com.example.spring.service.impl;
+
+import com.example.spring.entity.Book;
+import com.example.spring.exception.BookException;
+import com.example.spring.exception.BusinessException;
+import com.example.spring.exception.EntityNotFoundException;
+import com.example.spring.repository.BookRepository;
+import com.example.spring.service.BookService;
+import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+@Slf4j
+public class BookServiceImpl implements BookService {
+
+    private BookRepository bookRepository;
+    private ApplicationEventPublisher eventPublisher;
+
+    //todo sub-task 작성 필요 to github.
+    @Override
+    public Book createBook(Book book) {
+        log.info("도서 생성 요청 - 도서명: {}", book.getTitle());
+
+        if(bookRepository.existsByIsbn(book.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + book.getIsbn());
+        }
+
+        Book savedBook = bookRepository.save(book);
+
+        log.info("도서 생성 완료 - ID : {}",  savedBook.getId());
+
+        return savedBook;
+    }
+
+    @Override
+    public Optional<Book> getBookById(Long id) {
+        log.info("ID로 도서 검색 - ID: {}", id);
+        return bookRepository.findById(id);
+    }
+
+    @Override
+    public Optional<Book> getBookByIsbn(String isbn) {
+        return bookRepository.findByISBN(isbn);
+    }
+
+    //todo 나중에 할것
+    @Override
+    public Page<Book> getAllActiveBooks(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public Book updateBook(Long id, Book book) {
+        //도서가 있어야함.
+        Book existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없어요" + id));
+
+        //소프트 딜리트
+        if (existingBook.getDeletedDate() != null) {
+            throw new BookException.DeletedBookAccessException("삭제된 도서는 수정할 수 없습니다: " + id);
+        }
+
+        // ISBN 중복 검사 (자기 자신 제외)
+        if (!existingBook.getIsbn().equals(book.getIsbn()) &&
+                bookRepository.existsByIsbn(book.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + book.getIsbn());
+        }
+
+        existingBook.setTitle(book.getTitle());
+        existingBook.setAuthor(book.getAuthor());
+        existingBook.setIsbn(book.getIsbn());
+        existingBook.setPrice(book.getPrice());
+        existingBook.setAvailable(book.getAvailable());
+        existingBook.setUpdatedDate(book.getUpdatedDate());
+
+        Book savedBook = bookRepository.save(existingBook);
+
+        log.info("도서 정보 수정 완료 - ID: {}", savedBook.getId());
+
+        return savedBook;
+    }
+
+    @Override
+    public void deleteBook(Long id) {
+        bookRepository.findById(id).ifPresent(book -> {});
+
+    }
+
+    @Override
+    public void restoreBook(Long id) {
+
+    }
+
+    @Override
+    public List<Book> searchByTitle(String title) {
+        return List.of();
+    }
+
+    @Override
+    public List<Book> searchByAuthor(String author) {
+        return List.of();
+    }
+
+    @Override
+    public List<Book> searchByKeyword(String keyword) {
+        return List.of();
+    }
+
+    @Override
+    public List<Book> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
+        return List.of();
+    }
+
+    @Override
+    public Page<Book> searchBooksWithFilters(String title, String author, BigDecimal minPrice, BigDecimal maxPrice, Boolean available, Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public List<Book> getBooksByAvailability(Boolean available) {
+        return List.of();
+    }
+
+    @Override
+    public boolean isIsbnExists(String isbn) {
+        return false;
+    }
+
+    @Override
+    public Book updateBookAvailability(Long id, Boolean available) {
+        return null;
+    }
+
+    @Override
+    public long getTotalBooksCount() {
+        return 0;
+    }
+
+    @Override
+    public long getActiveBooksCount() {
+        return 0;
+    }
+}
