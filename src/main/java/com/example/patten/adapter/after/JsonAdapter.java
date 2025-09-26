@@ -6,7 +6,7 @@ import com.example.patten.adapter.before.NewJsonLibrary;
 public class JsonAdapter implements DataProcessor {
     // 1. 호환되지 않는 새로운 라이브러리 객체를 내부에 가짐
     private final NewJsonLibrary newJsonLibrary;
-    public final String jsonData;
+    private final String jsonData;
 
     public JsonAdapter(NewJsonLibrary newJsonLibrary, String jsonData) {
         this.newJsonLibrary = newJsonLibrary;
