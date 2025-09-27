@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class BookServiceImpl implements BookService {
@@ -134,7 +135,25 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        return bookRepository.findByPriceBetween(minPrice, maxPrice);
+        log.debug("가격 범위로 도서 검색 - 최소: {}, 최대: {}", minPrice, maxPrice);
+
+        if(minPrice == null && maxPrice == null) {
+            return bookRepository.findByDeletedDateIsNotNull();
+        }
+
+        if (minPrice == null) {
+            minPrice = BigDecimal.ZERO;
+        }
+
+        if (maxPrice == null) {
+            maxPrice = new BigDecimal("999999.99");
+        }
+
+        if (minPrice.compareTo(maxPrice) > 0) {
+            throw new BookException.InvalidPriceRangeException("최소 가격이 최대 가격보다 클 수 없습니다");
+        }
+
+        return bookRepository.findByPriceBetween(minPrice, maxPrice).stream().filter(book -> book.getDeletedDate() == null ).collect(Collectors.toList());
     }
 
     @Override
