@@ -1,16 +1,20 @@
 package com.example.spring.service.impl;
 
+import com.example.spring.dto.request.CreateBookRequest;
+import com.example.spring.dto.request.UpdateBookRequest;
+import com.example.spring.dto.response.BookResponse;
 import com.example.spring.entity.Book;
 import com.example.spring.exception.BookException;
-import com.example.spring.exception.BusinessException;
 import com.example.spring.exception.EntityNotFoundException;
 import com.example.spring.repository.BookRepository;
 import com.example.spring.service.BookService;
-import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +23,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BookServiceImpl implements BookService {
 
     private BookRepository bookRepository;
@@ -26,24 +33,38 @@ public class BookServiceImpl implements BookService {
 
     //todo sub-task 작성 필요 to github.
     @Override
-    public Book createBook(Book book) {
-        log.info("도서 생성 요청 - 도서명: {}", book.getTitle());
+    @Transactional
+    public BookResponse createBook(CreateBookRequest request) {
+        log.info("도서 생성 요청 - 도서명: {}", request.getTitle());
 
-        if(bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + book.getIsbn());
+        if(bookRepository.existsByIsbn(request.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + request.getIsbn());
         }
+
+        if (bookRepository.existsByIsbn(request.getIsbn())) {
+            throw new BookException.DuplicateIsbnException(request.getIsbn());
+        }
+        Book book = Book.builder()
+                .isbn(request.getIsbn())
+                .title(request.getTitle())
+                .author(request.getAuthor())
+                .price(request.getPrice())
+                .build();
 
         Book savedBook = bookRepository.save(book);
 
+        eventPublisher.publishEvent(bookRepository.save(savedBook));
+
         log.info("도서 생성 완료 - ID : {}",  savedBook.getId());
 
-        return savedBook;
+        return BookResponse.from(savedBook);
     }
 
     @Override
-    public Optional<Book> getBookById(Long id) {
+    public BookResponse getBookById(Long id) {
         log.info("ID로 도서 검색 - ID: {}", id);
-        return bookRepository.findById(id);
+        return BookResponse.from(bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book", id)));
     }
 
     @Override
@@ -58,7 +79,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book updateBook(Long id, Book book) {
+    public BookResponse updateBook(Long id, UpdateBookRequest book) {
         //도서가 있어야함.
         Book existingBook = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없어요" + id));
@@ -79,13 +100,12 @@ public class BookServiceImpl implements BookService {
         existingBook.setIsbn(book.getIsbn());
         existingBook.setPrice(book.getPrice());
         existingBook.setAvailable(book.getAvailable());
-        existingBook.setUpdatedDate(book.getUpdatedDate());
 
         Book savedBook = bookRepository.save(existingBook);
 
         log.info("도서 정보 수정 완료 - ID: {}", savedBook.getId());
 
-        return savedBook;
+        return BookResponse.from(savedBook);
     }
 
     @Override
