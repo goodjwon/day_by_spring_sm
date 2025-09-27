@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,33 +89,52 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void deleteBook(Long id) {
-        bookRepository.findById(id).ifPresent(book -> {});
+        log.info("도서 삭제 요청 (Soft Delete) - ID: {}", id);
+        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("삭제할 도서를 찾지 못하였습니다. ID: " + id));
 
+        if (book.getDeletedDate() != null) {
+            log.warn("이미 삭제된 도서입니다. ID: {}", id);
+            return;
+        }
+
+        book.setDeletedDate(LocalDateTime.now());
+        bookRepository.save(book);
+        log.info("도서 삭제 완료 (Soft Delete) - ID: {}", id);
     }
 
     @Override
     public void restoreBook(Long id) {
+        log.info("도서 복원 요청 - ID: {}", id);
+        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("복원할 도서를 찾지 못하였습니다. ID: " + id));
 
+        if (book.getDeletedDate() == null) {
+            log.warn("이미 활성 상태인 도서입니다. ID: {}", id);
+            return;
+        }
+
+        book.setDeletedDate(null);
+        bookRepository.save(book);
+        log.info("도서 복원 완료 - ID: {}", id);
     }
 
     @Override
     public List<Book> searchByTitle(String title) {
-        return List.of();
+        return bookRepository.findByTitleContaining(title);
     }
 
     @Override
     public List<Book> searchByAuthor(String author) {
-        return List.of();
+        return bookRepository.findByAuthorContaining(author);
     }
 
     @Override
     public List<Book> searchByKeyword(String keyword) {
-        return List.of();
+        return bookRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
     }
 
     @Override
     public List<Book> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        return List.of();
+        return bookRepository.findByPriceBetween(minPrice, maxPrice);
     }
 
     @Override
@@ -124,26 +144,34 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> getBooksByAvailability(Boolean available) {
-        return List.of();
+        return bookRepository.findByAvailableTrue(available);
     }
 
     @Override
     public boolean isIsbnExists(String isbn) {
-        return false;
+        return bookRepository.existsByIsbn(isbn);
     }
 
     @Override
     public Book updateBookAvailability(Long id, Boolean available) {
-        return null;
+        log.info("도서 재고 상태 변경 요청 - ID: {}, 상태: {}", id, available);
+        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("상태를 변경할 도서를 찾을 수 없습니다. ID: " + id));
+
+        book.setAvailable(available);
+        book.setUpdatedDate(LocalDateTime.now());
+
+        Book savedBook = bookRepository.save(book);
+        log.info("도서 재고 상태 변경 완료 - ID: {}", id);
+        return savedBook;
     }
 
     @Override
     public long getTotalBooksCount() {
-        return 0;
+        return bookRepository.findAll().size();
     }
 
     @Override
     public long getActiveBooksCount() {
-        return 0;
+        return bookRepository.findByDeletedDateIsNull().size();
     }
 }
