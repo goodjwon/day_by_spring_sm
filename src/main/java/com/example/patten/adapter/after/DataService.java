@@ -1,6 +1,6 @@
 package com.example.patten.adapter.after;
 
-import com.example.patten.adapter.before.DataProcessor;
+import com.example.patten.adapter.DataProcessor;
 
 // 개선된 DataService
 public class DataService {

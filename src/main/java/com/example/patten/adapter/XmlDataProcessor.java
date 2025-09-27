@@ -1,4 +1,4 @@
-package com.example.patten.adapter.before;
+package com.example.patten.adapter;
 
 // 기존에 있던 XML 처리기
 public class XmlDataProcessor implements DataProcessor {

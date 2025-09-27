@@ -1,7 +1,7 @@
 package com.example.patten.adapter.after;
 
-import com.example.patten.adapter.before.DataProcessor;
-import com.example.patten.adapter.before.NewJsonLibrary;
+import com.example.patten.adapter.DataProcessor;
+import com.example.patten.adapter.NewJsonLibrary;
 
 public class JsonAdapter implements DataProcessor {
     // 1. 호환되지 않는 새로운 라이브러리 객체를 내부에 가짐

@@ -1,5 +1,8 @@
 package com.example.patten.adapter.before;
 
+import com.example.patten.adapter.NewJsonLibrary;
+import com.example.patten.adapter.XmlDataProcessor;
+
 // 클라이언트 코드: DataService
 public class DataService {
     public void process(Object processor, String data) {

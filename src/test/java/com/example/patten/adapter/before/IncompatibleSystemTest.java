@@ -1,5 +1,7 @@
 package com.example.patten.adapter.before;
 
+import com.example.patten.adapter.NewJsonLibrary;
+import com.example.patten.adapter.XmlDataProcessor;
 import org.junit.jupiter.api.Test;
 
 public class IncompatibleSystemTest {

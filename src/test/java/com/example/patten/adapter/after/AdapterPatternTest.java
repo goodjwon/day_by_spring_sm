@@ -1,9 +1,9 @@
 package com.example.patten.adapter.after;
 
 // AdapterPatternTest.java
-import com.example.patten.adapter.before.DataProcessor;
-import com.example.patten.adapter.before.NewJsonLibrary;
-import com.example.patten.adapter.before.XmlDataProcessor;
+import com.example.patten.adapter.DataProcessor;
+import com.example.patten.adapter.NewJsonLibrary;
+import com.example.patten.adapter.XmlDataProcessor;
 import org.junit.jupiter.api.Test;
 
 public class AdapterPatternTest {
