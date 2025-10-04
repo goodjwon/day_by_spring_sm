@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,7 +83,7 @@ public class BookServiceImpl implements BookService {
     public BookResponse updateBook(Long id, UpdateBookRequest book) {
         //도서가 있어야함.
         Book existingBook = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없어요" + id));
+                .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없습니다" + id));
 
         //소프트 딜리트
         if (existingBook.getDeletedDate() != null) {
@@ -177,8 +178,44 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Page<Book> searchBooksWithFilters(String title, String author, BigDecimal minPrice, BigDecimal maxPrice, Boolean available, Pageable pageable) {
-        return null;
+    public Page<Book> searchBooksWithFilters(String title, String author,
+                                             BigDecimal minPrice, BigDecimal maxPrice,
+                                             Boolean available, Pageable pageable) {
+
+        log.debug("복합 조건으로 도서 검색 - 제목: {}, 저자: {}, 최소가격: {}, 최대가격: {}, 재고: {}, page: {}, size: {}",
+                title, author, minPrice, maxPrice, available, pageable.getPageNumber(), pageable.getPageSize());
+
+
+        List<Book> allActiveBooks = bookRepository.findByDeletedDateIsNotNull();
+
+        // 가정. 책이 100만권 있어요. 알라딘? 예스24?
+
+        //1. java 에서 필터링 하는 방법
+         // - 필터를 하는게 나음.      10001~ 200000
+        List<Book> filteredBooks = allActiveBooks.stream()
+                .filter(book -> title == null || book.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(book -> author == null || book.getAuthor().toLowerCase().contains(author.toLowerCase()))
+                .filter(book -> minPrice == null || book.getPrice().compareTo(minPrice) >= 0)
+                .filter(book -> maxPrice == null || book.getPrice().compareTo(maxPrice) <= 0)
+                .filter(book -> available == null || book.getAvailable().equals(available))
+                .collect(Collectors.toList());
+
+
+        // 100만개를 로딩한 후에 처리. => was (tomcat) 죽어요. outOfMemory. Die...
+        // 처리 효율이 떨어짐.
+        // 처리가 쉬워요.
+
+        //todo 2. db에서 필터링 하는 방법으로 개선하기.
+        // 효율이 좋고.
+        // 코드가 어려워요.
+
+        // 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredBooks.size());
+
+        List<Book> pageContent = start >= filteredBooks.size() ? List.of() : filteredBooks.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, filteredBooks.size());
     }
 
     @Override

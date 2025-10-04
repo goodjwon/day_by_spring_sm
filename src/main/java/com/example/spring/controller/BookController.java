@@ -36,8 +36,8 @@ public class BookController {
     }
 
     // 도서 단건 조회 API (GET /api/books/{id})
-    @GetMapping
-    public ResponseEntity<BookResponse> findBookById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponse> getBook(@PathVariable Long id) {
         log.info("도서 조회 요청 - ID: {}", id);
         BookResponse response = bookService.getBookById(id);
 
@@ -64,7 +64,62 @@ public class BookController {
         return ResponseEntity.ok(response);
 
     }
-//    도서 정보 수정 API (PUT /api/books/{id})
-//    도서 삭제 API (DELETE /api/books/{id}) - Soft Delete
-//    ISBN 중복 검증
+
+    /**
+     * 도서 정보 수정 (PUT /api/books/{id})
+     */
+
+    /**
+     * 도서 삭제 (DELETE /api/books/{id}) - Soft Delete
+     */
+
+    /**
+     * 도서 복원 @PatchMapping("/{id}/restore")
+     */
+
+    /**
+     * ISBN으로 도서 조회 @GetMapping("/isbn/{isbn}")
+     */
+
+    /**
+     * 제목으로 도서 검색 @GetMapping("/search/title")
+     */
+
+    /**
+     * 저자로 도서 검색 @GetMapping("/search/author")
+     */
+
+    /**
+     * 키워드로 도서 검색 @GetMapping("/search/keyword")
+     */
+
+    /**
+     * 가격 범위로 도서 검색 @GetMapping("/search/price")
+     */
+
+    /**
+     * 복합 조건으로 도서 검색 (페이징) @GetMapping("/search")
+     */
+
+    /**
+     * 재고 상태별 도서 조회 @GetMapping("/availability/{available}")
+     */
+
+    /**
+     * 도서 재고 상태 업데이트 @PatchMapping("/{id}/availability")
+     */
+
+    /**
+     * ISBN 중복 확인 @GetMapping("/validate/isbn")
+     */
+
+    /**
+     * 도서 통계 조회 @GetMapping("/statistics")
+     */
+
+
+
+
+
+
 }
