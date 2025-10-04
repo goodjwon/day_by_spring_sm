@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@Import(com.example.spring.repository.impl.JpaBookRepository.class)
 public class BookRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
@@ -41,12 +43,41 @@ public class BookRepositoryTest {
     }
 
     @Test
-    public void findById_존재하는도서_도서반환() {
+    public void save_신규도서_저장성공() {
         //Given
-        Long bookId = 1L;
+        Book newBook = Book.builder()
+                .author("새 저자")
+                .title("새 도서")
+                .price(new BigDecimal("10000"))
+                .isbn("9780132350885") // 유니크한 ISBN 생성
+                .available(true)
+                .createdDate(LocalDateTime.now())
+                .build();
+
 
         //When
-        Optional<Book> foundBook = bookRepository.findById(bookId);
+        Book savedBook = bookRepository.save(newBook);
+        entityManager.flush(); // 즉시 저장
+
+        //Then
+        assertThat(savedBook.getId()).isNotNull();
+        assertThat(savedBook.getTitle()).isEqualTo(newBook.getTitle());
+        assertThat(savedBook.getAuthor()).isEqualTo(newBook.getAuthor());
+        assertThat(savedBook.getPrice()).isEqualTo(newBook.getPrice());
+
+        bookRepository.deleteById(savedBook.getId());
+
+
+    }
+
+    @Test
+    public void findById_존재하는도서_도서반환() {
+        //Given
+        entityManager.persistAndFlush(sampleBook);
+        entityManager.clear();
+
+        //When
+        Optional<Book> foundBook = bookRepository.findById(sampleBook.getId());
 
         //Then
         assertThat(foundBook).isPresent();
@@ -67,40 +98,32 @@ public class BookRepositoryTest {
 
     @Test
     public void findAll_도서목록반환() {
+        //Given
+        Book book1 = Book.builder()
+                .title("Effective Java")
+                .author("Joshua Bloch")
+                .isbn("9780134685991")
+                .price(new BigDecimal("52.99"))
+                .createdDate(LocalDateTime.now().minusDays(1))
+                .build();
+
+        Book book2 = Book.builder()
+                .title("Spring in Action")
+                .author("Craig Walls")
+                .isbn("9781617294945")
+                .price(new BigDecimal("39.99"))
+                .createdDate(LocalDateTime.now())
+                .build();
+        entityManager.persistAndFlush(book1);
+        entityManager.persistAndFlush(book2);
+        entityManager.clear();
+
         // When
         List<Book> books = bookRepository.findAll();
 
         // Then
         assertThat(books).isNotEmpty();
-        assertThat(books).hasSizeGreaterThanOrEqualTo(5);
-    }
-
-    @Test
-    public void save_신규도서_저장성공() {
-        //Given
-        Book newBook = Book.builder()
-                .author("새 저자")
-                .title("새 도서")
-                .price(new BigDecimal("10000"))
-                .isbn("1234567890" + System.currentTimeMillis()) // 유니크한 ISBN 생성
-                .available(true)
-                .createdDate(LocalDateTime.now())
-                .build();
-
-
-        //When
-        Book savedBook = bookRepository.save(newBook);
-        entityManager.flush(); // 즉시 저장
-
-        //Then
-        assertThat(savedBook.getId()).isNotNull();
-        assertThat(savedBook.getTitle()).isEqualTo(newBook.getTitle());
-        assertThat(savedBook.getAuthor()).isEqualTo(newBook.getAuthor());
-        assertThat(savedBook.getPrice()).isEqualTo(newBook.getPrice());
-
-        bookRepository.deleteById(savedBook.getId());
-
-
+        assertThat(books).hasSize(2);
     }
 
     @Test
@@ -132,27 +155,27 @@ public class BookRepositoryTest {
     @Test
     public void deleteById_도서삭제() {
 
-        Long bookId = 7L;
+        entityManager.persistAndFlush(sampleBook);
 
         // When
-        bookRepository.deleteById(bookId);
+        bookRepository.deleteById(sampleBook.getId());
         entityManager.flush();
         entityManager.clear();
 
         // Then
-        Optional<Book> deletedBook = bookRepository.findById(bookId);
+        Optional<Book> deletedBook = bookRepository.findById(sampleBook.getId());
         assertThat(deletedBook).isEmpty();
     }
 
     @Test
     public void findBookById_존재하는도서_도서직접반환() {
         //Given
-        Long bookId = 6L;
+        entityManager.persistAndFlush(sampleBook);
         //When
-        Book foundBook = bookRepository.findByIdOrThrow(bookId);
+        Book foundBook = bookRepository.findByIdOrThrow(sampleBook.getId());
         //Then
         assertThat(foundBook).isNotNull();
-        assertThat(foundBook.getId()).isEqualTo(bookId);
+        assertThat(foundBook.getId()).isEqualTo(sampleBook.getId());
         assertThat(foundBook.getTitle()).isEqualTo("Clean Code");
     }
 

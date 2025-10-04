@@ -1,0 +1,125 @@
+package com.example.spring.controller;
+
+import com.example.spring.dto.request.CreateBookRequest;
+import com.example.spring.dto.response.BookResponse;
+import com.example.spring.entity.Book;
+import com.example.spring.service.BookService;
+import jakarta.validation.Valid;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/v1/books")
+@RequiredArgsConstructor
+public class BookController {
+    private final BookService bookService;
+
+    // 도서 등록 API (POST /api/books)
+    @PostMapping
+    public ResponseEntity<BookResponse> createBook(@Valid @RequestBody CreateBookRequest request) {
+        log.info("도서 등록 요청 - 도서명: {}", request.getTitle());
+        BookResponse response = bookService.createBook(request);
+        log.info("도서 등록 성공 - ID: {}", response.getId());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // 도서 단건 조회 API (GET /api/books/{id})
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponse> getBook(@PathVariable Long id) {
+        log.info("도서 조회 요청 - ID: {}", id);
+        BookResponse response = bookService.getBookById(id);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // 도서 목록 조회 API (GET /api/books)
+    @GetMapping
+    public ResponseEntity<Page<BookResponse>> getAllActiveBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sort,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        log.debug("활성 도서 목록 조회 - page: {}, size: {}", page, size);
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+
+        Page<Book> books = bookService.getAllActiveBooks(pageable);
+
+        Page<BookResponse> response = books.map(BookResponse::from);
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    /**
+     * 도서 정보 수정 (PUT /api/books/{id})
+     */
+
+    /**
+     * 도서 삭제 (DELETE /api/books/{id}) - Soft Delete
+     */
+
+    /**
+     * 도서 복원 @PatchMapping("/{id}/restore")
+     */
+
+    /**
+     * ISBN으로 도서 조회 @GetMapping("/isbn/{isbn}")
+     */
+
+    /**
+     * 제목으로 도서 검색 @GetMapping("/search/title")
+     */
+
+    /**
+     * 저자로 도서 검색 @GetMapping("/search/author")
+     */
+
+    /**
+     * 키워드로 도서 검색 @GetMapping("/search/keyword")
+     */
+
+    /**
+     * 가격 범위로 도서 검색 @GetMapping("/search/price")
+     */
+
+    /**
+     * 복합 조건으로 도서 검색 (페이징) @GetMapping("/search")
+     */
+
+    /**
+     * 재고 상태별 도서 조회 @GetMapping("/availability/{available}")
+     */
+
+    /**
+     * 도서 재고 상태 업데이트 @PatchMapping("/{id}/availability")
+     */
+
+    /**
+     * ISBN 중복 확인 @GetMapping("/validate/isbn")
+     */
+
+    /**
+     * 도서 통계 조회 @GetMapping("/statistics")
+     */
+
+
+
+
+
+
+}

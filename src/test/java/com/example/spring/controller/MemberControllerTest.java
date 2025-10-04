@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -43,7 +44,7 @@ class MemberControllerTest {
 
     // 3. @Mock 대신 @MockBean을 사용합니다.
     //    스프링 컨테이너에 진짜 MemberService 대신 가짜(Mock) MemberService를 등록합니다.
-    @MockBean
+    @MockitoBean
     private MemberService memberService;
 
     // 4. @BeforeEach(setUp) 메서드는 더 이상 필요 없습니다.
