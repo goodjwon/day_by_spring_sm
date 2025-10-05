@@ -1,5 +1,8 @@
 package com.example.spring.service;
 
+import com.example.spring.dto.request.CreateBookRequest;
+import com.example.spring.dto.request.UpdateBookRequest;
+import com.example.spring.dto.response.BookResponse;
 import com.example.spring.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,11 +16,11 @@ public interface BookService {
     /**
      * 도서 등록
      *
-     * @param book 등록할 도서 정보
+     * @param request 등록할 도서 정보
      * @return 등록된 도서
      * @throws IllegalArgumentException ISBN이 이미 존재하는 경우
      */
-    Book createBook(Book book);
+    BookResponse createBook(CreateBookRequest request);
 
 
     /**
@@ -26,7 +29,7 @@ public interface BookService {
      * @param id 도서 id
      * @return 도서 정보
      */
-    Optional<Book> getBookById(Long id);
+    BookResponse getBookById(Long id);
 
     /**
      * ISBN으로 도서 조회
@@ -49,7 +52,7 @@ public interface BookService {
      * @return 수정된 도서 정보
      * @throws IllegalArgumentException 도서를 찾을 수 없거나 ISBN이 중복되는 경우
      */
-    Book updateBook(Long id, Book book);
+    BookResponse updateBook(Long id, UpdateBookRequest book);
 
     /**
      * 도서 삭제 (Soft Delete)
