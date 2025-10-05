@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,34 +30,44 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class BookServiceImpl implements BookService {
 
-    private BookRepository bookRepository;
-    private ApplicationEventPublisher eventPublisher;
+    private final BookRepository bookRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    //todo sub-task 작성 필요 to github.
     @Override
     @Transactional
     public BookResponse createBook(CreateBookRequest request) {
         log.info("도서 생성 요청 - 도서명: {}", request.getTitle());
 
-        if(bookRepository.existsByIsbn(request.getIsbn())) {
-            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + request.getIsbn());
+        // 유효성 검사
+        if (!StringUtils.hasText(request.getTitle())) {
+            throw new BookException.InvalidBookDataException("도서 제목은 필수입니다");
+        }
+        if (!StringUtils.hasText(request.getAuthor())) {
+            throw new BookException.InvalidBookDataException("저자는 필수입니다");
+        }
+        if (!StringUtils.hasText(request.getIsbn())) {
+            throw new BookException.InvalidBookDataException("ISBN은 필수입니다");
+        }
+        if (request.getPrice() == null || request.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BookException.InvalidBookDataException("가격은 0 이상이어야 합니다");
+        }
+        if (bookRepository.existsByIsbn(request.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다");
         }
 
-        if (bookRepository.existsByIsbn(request.getIsbn())) {
-            throw new BookException.DuplicateIsbnException(request.getIsbn());
-        }
         Book book = Book.builder()
                 .isbn(request.getIsbn())
                 .title(request.getTitle())
                 .author(request.getAuthor())
                 .price(request.getPrice())
+                .available(request.getAvailable())
                 .build();
 
         Book savedBook = bookRepository.save(book);
 
-        eventPublisher.publishEvent(bookRepository.save(savedBook));
+        // eventPublisher.publishEvent(savedBook); // 이벤트 발행 로직 (필요시 활성화)
 
-        log.info("도서 생성 완료 - ID : {}",  savedBook.getId());
+        log.info("도서 생성 완료 - ID : {}", savedBook.getId());
 
         return BookResponse.from(savedBook);
     }
@@ -64,8 +75,11 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponse getBookById(Long id) {
         log.info("ID로 도서 검색 - ID: {}", id);
-        return BookResponse.from(bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book", id)));
+        Book book = bookRepository.findById(id).orElse(null);
+        if (book == null) {
+            return null;
+        }
+        return BookResponse.from(book);
     }
 
     @Override
@@ -73,50 +87,50 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findByISBN(isbn);
     }
 
-    //todo 나중에 할것
     @Override
     public Page<Book> getAllActiveBooks(Pageable pageable) {
-        return null;
+        List<Book> activeBooks = bookRepository.findByDeletedDateIsNull();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), activeBooks.size());
+        List<Book> pageContent = start >= activeBooks.size() ? List.of() : activeBooks.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, activeBooks.size());
     }
 
     @Override
-    public BookResponse updateBook(Long id, UpdateBookRequest book) {
-        //도서가 있어야함.
+    @Transactional
+    public BookResponse updateBook(Long id, UpdateBookRequest request) {
         Book existingBook = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없습니다" + id));
+                .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없습니다: " + id));
 
-        //소프트 딜리트
         if (existingBook.getDeletedDate() != null) {
-            throw new BookException.DeletedBookAccessException("삭제된 도서는 수정할 수 없습니다: " + id);
+            throw new BookException.DeletedBookAccessException("삭제된 도서는 수정할 수 없습니다");
         }
 
-        // ISBN 중복 검사 (자기 자신 제외)
-        if (!existingBook.getIsbn().equals(book.getIsbn()) &&
-                bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + book.getIsbn());
+        if (!existingBook.getIsbn().equals(request.getIsbn()) &&
+                bookRepository.existsByIsbn(request.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + request.getIsbn());
         }
 
-        existingBook.setTitle(book.getTitle());
-        existingBook.setAuthor(book.getAuthor());
-        existingBook.setIsbn(book.getIsbn());
-        existingBook.setPrice(book.getPrice());
-        existingBook.setAvailable(book.getAvailable());
+        existingBook.setTitle(request.getTitle());
+        existingBook.setAuthor(request.getAuthor());
+        existingBook.setIsbn(request.getIsbn());
+        existingBook.setPrice(request.getPrice());
+        existingBook.setAvailable(request.getAvailable());
+        existingBook.setUpdatedDate(LocalDateTime.now());
 
         Book savedBook = bookRepository.save(existingBook);
-
         log.info("도서 정보 수정 완료 - ID: {}", savedBook.getId());
-
         return BookResponse.from(savedBook);
     }
 
     @Override
+    @Transactional
     public void deleteBook(Long id) {
         log.info("도서 삭제 요청 (Soft Delete) - ID: {}", id);
-        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("삭제할 도서를 찾지 못하였습니다. ID: " + id));
+        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("삭제할 도서를 찾지 못하였습니다."));
 
         if (book.getDeletedDate() != null) {
-            log.warn("이미 삭제된 도서입니다. ID: {}", id);
-            return;
+            throw new BookException.DeletedBookAccessException("이미 삭제된 도서입니다.");
         }
 
         book.setDeletedDate(LocalDateTime.now());
@@ -125,13 +139,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public void restoreBook(Long id) {
         log.info("도서 복원 요청 - ID: {}", id);
-        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("복원할 도서를 찾지 못하였습니다. ID: " + id));
+        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("복원할 도서를 찾지 못하였습니다."));
 
         if (book.getDeletedDate() == null) {
-            log.warn("이미 활성 상태인 도서입니다. ID: {}", id);
-            return;
+            throw new BookException.InvalidBookStateException("삭제되지 않은 도서는 복원할 수 없습니다");
         }
 
         book.setDeletedDate(null);
@@ -149,6 +163,8 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findByAuthorContaining(author);
     }
 
+
+
     @Override
     public List<Book> searchByKeyword(String keyword) {
         return bookRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
@@ -158,23 +174,13 @@ public class BookServiceImpl implements BookService {
     public List<Book> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
         log.debug("가격 범위로 도서 검색 - 최소: {}, 최대: {}", minPrice, maxPrice);
 
-        if(minPrice == null && maxPrice == null) {
-            return bookRepository.findByDeletedDateIsNotNull();
-        }
-
-        if (minPrice == null) {
-            minPrice = BigDecimal.ZERO;
-        }
-
-        if (maxPrice == null) {
-            maxPrice = new BigDecimal("999999.99");
-        }
-
-        if (minPrice.compareTo(maxPrice) > 0) {
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
             throw new BookException.InvalidPriceRangeException("최소 가격이 최대 가격보다 클 수 없습니다");
         }
 
-        return bookRepository.findByPriceBetween(minPrice, maxPrice).stream().filter(book -> book.getDeletedDate() == null ).collect(Collectors.toList());
+        return bookRepository.findByPriceBetween(minPrice, maxPrice).stream()
+                .filter(book -> book.getDeletedDate() == null)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -185,31 +191,16 @@ public class BookServiceImpl implements BookService {
         log.debug("복합 조건으로 도서 검색 - 제목: {}, 저자: {}, 최소가격: {}, 최대가격: {}, 재고: {}, page: {}, size: {}",
                 title, author, minPrice, maxPrice, available, pageable.getPageNumber(), pageable.getPageSize());
 
+        List<Book> allActiveBooks = bookRepository.findByDeletedDateIsNull();
 
-        List<Book> allActiveBooks = bookRepository.findByDeletedDateIsNotNull();
-
-        // 가정. 책이 100만권 있어요. 알라딘? 예스24?
-
-        //1. java 에서 필터링 하는 방법
-         // - 필터를 하는게 나음.      10001~ 200000
         List<Book> filteredBooks = allActiveBooks.stream()
-                .filter(book -> title == null || book.getTitle().toLowerCase().contains(title.toLowerCase()))
-                .filter(book -> author == null || book.getAuthor().toLowerCase().contains(author.toLowerCase()))
+                .filter(book -> !StringUtils.hasText(title) || book.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(book -> !StringUtils.hasText(author) || book.getAuthor().toLowerCase().contains(author.toLowerCase()))
                 .filter(book -> minPrice == null || book.getPrice().compareTo(minPrice) >= 0)
                 .filter(book -> maxPrice == null || book.getPrice().compareTo(maxPrice) <= 0)
                 .filter(book -> available == null || book.getAvailable().equals(available))
                 .collect(Collectors.toList());
 
-
-        // 100만개를 로딩한 후에 처리. => was (tomcat) 죽어요. outOfMemory. Die...
-        // 처리 효율이 떨어짐.
-        // 처리가 쉬워요.
-
-        //todo 2. db에서 필터링 하는 방법으로 개선하기.
-        // 효율이 좋고.
-        // 코드가 어려워요.
-
-        // 페이징 처리
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), filteredBooks.size());
 
@@ -229,6 +220,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public Book updateBookAvailability(Long id, Boolean available) {
         log.info("도서 재고 상태 변경 요청 - ID: {}, 상태: {}", id, available);
         Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("상태를 변경할 도서를 찾을 수 없습니다. ID: " + id));

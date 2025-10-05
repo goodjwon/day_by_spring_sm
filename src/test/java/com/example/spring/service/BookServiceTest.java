@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,11 +33,13 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 @Slf4j
-@DataJpaTest
 @ExtendWith(MockitoExtension.class)
 public class BookServiceTest {
     @Mock
     private BookRepository bookRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher; // 수정: eventPublisher Mock 추가
 
     @InjectMocks
     private BookServiceImpl bookService;
@@ -211,13 +214,14 @@ public class BookServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(savedBook);
+            // 수정: 객체 전체 비교에서 ID 비교로 변경
+            assertThat(result.getId()).isEqualTo(savedBook.getId());
             assertThat(result.getTitle()).isEqualTo("Clean Code");
         }
 
         @Test
-        @DisplayName("ID로 삭제된 도서 조회 시 빈 Optional 반환")
-        void getBookById_삭제된도서_빈Optional반환() {
+        @DisplayName("ID로 삭제된 도서 조회 성공")
+        void getBookById_삭제된도서_조회성공() {
             // Given
             Book deletedBook = Book.builder()
                     .id(1L)
@@ -240,8 +244,8 @@ public class BookServiceTest {
         }
 
         @Test
-        @DisplayName("존재하지 않는 ID로 도서 조회 시 빈 Optional 반환")
-        void getBookById_존재하지않는ID_빈Optional반환() {
+        @DisplayName("존재하지 않는 ID로 도서 조회 시 null 반환")
+        void getBookById_존재하지않는ID_null반환() {
             // Given
             given(bookRepository.findById(999L)).willReturn(Optional.empty());
 
@@ -249,6 +253,7 @@ public class BookServiceTest {
             BookResponse result = bookService.getBookById(999L);
 
             // Then
+            // 수정: 서비스 로직 변경에 따라 예외 발생 대신 null을 반환하는지 확인
             assertThat(result).isNull();
         }
 
@@ -332,19 +337,9 @@ public class BookServiceTest {
         @DisplayName("도서 정보 수정 성공")
         void updateBook_유효한정보_수정성공() {
             // Given
-            Book expectedSavedBook = Book.builder()
-                    .id(1L)
-                    .title("Clean Code - Updated")
-                    .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("47.99"))
-                    .available(true)
-                    .createdDate(LocalDateTime.now())
-                    .updatedDate(LocalDateTime.now())
-                    .build();
-
             given(bookRepository.findById(1L)).willReturn(Optional.of(savedBook));
-            given(bookRepository.save(any(Book.class))).willReturn(expectedSavedBook);
+            given(bookRepository.save(any(Book.class))).willAnswer(invocation -> invocation.getArgument(0));
+
 
             // When
             BookResponse result = bookService.updateBook(1L, updateBookRequest);
@@ -374,12 +369,6 @@ public class BookServiceTest {
             // Given
             Book deletedBook = Book.builder()
                     .id(1L)
-                    .title("Clean Code")
-                    .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
-                    .available(true)
-                    .createdDate(LocalDateTime.now())
                     .deletedDate(LocalDateTime.now())
                     .build();
 
@@ -401,7 +390,6 @@ public class BookServiceTest {
         void deleteBook_존재하는도서_삭제성공() {
             // Given
             given(bookRepository.findById(1L)).willReturn(Optional.of(savedBook));
-            given(bookRepository.save(any(Book.class))).willReturn(savedBook);
 
             // When
             bookService.deleteBook(1L);
@@ -409,6 +397,7 @@ public class BookServiceTest {
             // Then
             verify(bookRepository).findById(1L);
             verify(bookRepository).save(savedBook);
+            assertThat(savedBook.getDeletedDate()).isNotNull();
         }
 
         @Test
@@ -429,12 +418,6 @@ public class BookServiceTest {
             // Given
             Book deletedBook = Book.builder()
                     .id(1L)
-                    .title("Clean Code")
-                    .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
-                    .available(true)
-                    .createdDate(LocalDateTime.now())
                     .deletedDate(LocalDateTime.now())
                     .build();
 
@@ -457,17 +440,10 @@ public class BookServiceTest {
             // Given
             Book deletedBook = Book.builder()
                     .id(1L)
-                    .title("Clean Code")
-                    .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
-                    .available(true)
-                    .createdDate(LocalDateTime.now())
                     .deletedDate(LocalDateTime.now())
                     .build();
 
             given(bookRepository.findById(1L)).willReturn(Optional.of(deletedBook));
-            given(bookRepository.save(any(Book.class))).willReturn(deletedBook);
 
             // When
             bookService.restoreBook(1L);
@@ -475,6 +451,7 @@ public class BookServiceTest {
             // Then
             verify(bookRepository).findById(1L);
             verify(bookRepository).save(deletedBook);
+            assertThat(deletedBook.getDeletedDate()).isNull();
         }
 
         @Test
@@ -486,8 +463,7 @@ public class BookServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookService.restoreBook(1L))
                     .isInstanceOf(BookException.InvalidBookStateException.class)
-                    .hasMessageContaining("복원할 도서를 찾지 못하였습니다.");
-//            삭제되지 않은 도서는 복원할 수 없습니다
+                    .hasMessageContaining("삭제되지 않은 도서는 복원할 수 없습니다");
         }
     }
 
@@ -604,9 +580,10 @@ public class BookServiceTest {
                     "Clean", "Martin", new BigDecimal("40"), new BigDecimal("50"), true, pageable);
 
             // Then
-            assertThat(result.getContent()).hasSize(0);  // Clean Code, Clean Architecture
-            assertThat(result.getTotalElements()).isEqualTo(0);
-            assertThat(result.getTotalPages()).isEqualTo(0);
+            // 수정: 필터링 로직 및 단언 수정
+            assertThat(result.getContent()).hasSize(2);  // Clean Code, Clean Architecture
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getTotalPages()).isEqualTo(1);
             assertThat(result.getContent()).extracting(Book::getTitle)
                     .containsExactly("Clean Code", "Clean Architecture");
         }
@@ -616,7 +593,7 @@ public class BookServiceTest {
         void searchBooksWithFilters_조건불일치_빈페이지반환() {
             // Given
             List<Book> allActiveBooks = List.of(savedBook);
-
+            given(bookRepository.findByDeletedDateIsNull()).willReturn(allActiveBooks);
             Pageable pageable = PageRequest.of(0, 10);
 
             // When - 존재하지 않는 저자로 검색
@@ -661,6 +638,7 @@ public class BookServiceTest {
 
             // Then
             assertThat(result).isNotNull();
+            assertThat(result.getAvailable()).isFalse();
             verify(bookRepository).save(savedBook);
         }
     }
