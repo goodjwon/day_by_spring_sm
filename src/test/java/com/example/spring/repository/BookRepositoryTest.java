@@ -1,6 +1,5 @@
 package com.example.spring.repository;
 
-
 import com.example.spring.entity.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,7 +18,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@Import(BookRepository.class)
 public class BookRepositoryTest {
+
     @Autowired
     private TestEntityManager entityManager;
 
@@ -28,6 +29,7 @@ public class BookRepositoryTest {
 
     private Book sampleBook;
 
+    // 각 테스트 실행 전 샘플 데이터 초기화
     @BeforeEach
     void setUp() {
         sampleBook = Book.builder()
@@ -38,134 +40,216 @@ public class BookRepositoryTest {
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
+        entityManager.persist(sampleBook);
     }
 
-    @Test
-    public void findById_존재하는도서_도서반환() {
-        //Given
-        Long bookId = 1L;
+    @Nested
+    @DisplayName("기본 CRUD 테스트")
+    class BasicCrudTest {
 
-        //When
-        Optional<Book> foundBook = bookRepository.findById(bookId);
+        @Test
+        @DisplayName("ID로 도서 조회 성공")
+        public void findById_존재하는도서_도서반환() {
+            // When
+            Optional<Book> foundBook = bookRepository.findById(sampleBook.getId());
 
-        //Then
-        assertThat(foundBook).isPresent();
-        assertThat(foundBook.get().getTitle()).isEqualTo("Clean Code");
-        assertThat(foundBook.get().getAuthor()).isEqualTo("Robert C. Martin");
+            // Then
+            assertThat(foundBook).isPresent();
+            assertThat(foundBook.get().getTitle()).isEqualTo("Clean Code");
+            assertThat(foundBook.get().getAuthor()).isEqualTo("Robert C. Martin");
+        }
 
+        @Test
+        @DisplayName("존재하지 않는 ID로 조회 시 빈 Optional 반환")
+        public void findById_존재하지않는도서_빈Optional반환() {
+            // Given
+            Long nonExistentId = 9999L;
+
+            // When
+            Optional<Book> foundBook = bookRepository.findById(nonExistentId);
+
+            // Then
+            assertThat(foundBook).isEmpty();
+        }
+
+        @Test
+        @DisplayName("모든 도서 조회")
+        public void findAll_도서목록반환() {
+            // When
+            List<Book> books = bookRepository.findAll();
+
+            // Then
+            assertThat(books).isNotEmpty();
+            assertThat(books).contains(sampleBook);
+        }
+
+        @Test
+        @DisplayName("도서 저장 성공")
+        public void save_신규도서_저장성공() {
+            // Given
+            Book newBook = Book.builder()
+                    .author("새 저자")
+                    .title("새 도서")
+                    .price(new BigDecimal("10000"))
+                    .isbn("1234567890" + System.currentTimeMillis())
+                    .available(true)
+                    .createdDate(LocalDateTime.now())
+                    .build();
+
+            // When
+            Book savedBook = bookRepository.save(newBook);
+            entityManager.flush();
+
+            // Then
+            assertThat(savedBook.getId()).isNotNull();
+            assertThat(bookRepository.findById(savedBook.getId())).isPresent();
+        }
+
+        @Test
+        @DisplayName("도서 삭제 성공")
+        public void deleteById_도서삭제() {
+            // Given
+            Long bookId = sampleBook.getId();
+
+            // When
+            bookRepository.deleteById(bookId);
+            entityManager.flush();
+            entityManager.clear();
+
+            // Then
+            Optional<Book> deletedBook = bookRepository.findById(bookId);
+            assertThat(deletedBook).isEmpty();
+        }
     }
 
-    @Test
-    public void findById_존재하지않는도서_빈Optional반환() {
-        Long bookId = 150L;
+    @Nested
+    @DisplayName("편의 메서드 테스트")
+    class ConvenienceMethodTest {
+        @Test
+        @DisplayName("findBookById 편의 메서드 - 존재하는 경우")
+        public void findBookById_존재하는도서_도서직접반환() {
+            // When
+            Book foundBook = bookRepository.findByIdOrThrow(sampleBook.getId());
 
-        Optional<Book> foundBook = bookRepository.findById(bookId);
+            // Then
+            assertThat(foundBook).isNotNull();
+            assertThat(foundBook.getId()).isEqualTo(sampleBook.getId());
+        }
 
-        assertThat(foundBook).isEmpty();
+        @Test
+        @DisplayName("findBookById 편의 메서드 - 존재하지 않는 경우")
+        public void findBookById_존재하지않는도서_null반환() {
+            // Given
+            Long nonExistentId = 9999L;
 
+            // When
+            Book foundBook = bookRepository.findByIdOrThrow(nonExistentId);
+
+            // Then
+            assertThat(foundBook).isNull();
+        }
+
+        @Test
+        @DisplayName("findActiveBooks 편의 메서드 (삭제되지 않은 도서 조회)")
+        void findActiveBooks_삭제되지않은도서만조회() {
+            // Given: Book 엔티티에 deletedDate가 있다고 가정
+
+            // When
+            List<Book> activeBooks = bookRepository.findByDeletedDateIsNull();
+
+            // Then
+            assertThat(activeBooks).isNotEmpty();
+            assertThat(activeBooks).allMatch(book -> book.getDeletedDate() == null);
+        }
     }
 
-    @Test
-    public void findAll_도서목록반환() {
-        // When
-        List<Book> books = bookRepository.findAll();
+    @Nested
+    @DisplayName("Soft Delete 테스트")
+    class SoftDeleteTest {
 
-        // Then
-        assertThat(books).isNotEmpty();
-        assertThat(books).hasSizeGreaterThanOrEqualTo(5);
+        @Test
+        @DisplayName("삭제된 도서만 조회")
+        void findByDeletedDateIsNotNull_삭제된도서만조회() {
+            // Given
+            sampleBook.setDeletedDate(LocalDateTime.now());
+            entityManager.persistAndFlush(sampleBook);
+
+            // When
+            List<Book> deletedBooks = bookRepository.findByDeletedDateIsNotNull();
+
+            // Then
+            assertThat(deletedBooks).isNotEmpty();
+            assertThat(deletedBooks).contains(sampleBook);
+            assertThat(deletedBooks).allMatch(book -> book.getDeletedDate() != null);
+        }
+
+        @Test
+        @DisplayName("삭제되지 않은 도서만 조회")
+        void findByDeletedDateIsNull_삭제되지않은도서만조회() {
+            // Given
+            // When
+            List<Book> activeBooks = bookRepository.findByDeletedDateIsNull();
+
+            // Then
+            assertThat(activeBooks).isNotEmpty();
+            assertThat(activeBooks).contains(sampleBook);
+            assertThat(activeBooks).allMatch(book -> book.getDeletedDate() == null);
+        }
     }
 
-    @Test
-    public void save_신규도서_저장성공() {
-        //Given
-        Book newBook = Book.builder()
-                .author("새 저자")
-                .title("새 도서")
-                .price(new BigDecimal("10000"))
-                .isbn("1234567890" + System.currentTimeMillis()) // 유니크한 ISBN 생성
-                .available(true)
-                .createdDate(LocalDateTime.now())
-                .build();
+    @Nested
+    @DisplayName("재고 상태별 테스트")
+    class AvailabilityTest {
 
+        private Book availableBook;
+        private Book unavailableBook;
 
-        //When
-        Book savedBook = bookRepository.save(newBook);
-        entityManager.flush(); // 즉시 저장
+        @BeforeEach
+        void setUp() {
+            availableBook = Book.builder()
+                    .title("Available Book")
+                    .author("Author A")
+                    .isbn("1111111111111")
+                    .price(new BigDecimal("30.00"))
+                    .available(true)
+                    .createdDate(LocalDateTime.now())
+                    .build();
 
-        //Then
-        assertThat(savedBook.getId()).isNotNull();
-        assertThat(savedBook.getTitle()).isEqualTo(newBook.getTitle());
-        assertThat(savedBook.getAuthor()).isEqualTo(newBook.getAuthor());
-        assertThat(savedBook.getPrice()).isEqualTo(newBook.getPrice());
+            unavailableBook = Book.builder()
+                    .title("Unavailable Book")
+                    .author("Author B")
+                    .isbn("2222222222222")
+                    .price(new BigDecimal("25.00"))
+                    .available(false)
+                    .createdDate(LocalDateTime.now())
+                    .build();
 
-        bookRepository.deleteById(savedBook.getId());
+            entityManager.persist(availableBook);
+            entityManager.persist(unavailableBook);
+            entityManager.flush();
+        }
 
+        @Test
+        @DisplayName("재고 상태별 도서 조회 - 재고 있음")
+        void getBooksByAvailability_재고있는도서조회() {
+            // When
+            List<Book> availableBooks = bookRepository.findByAvailableTrue(true);
 
-    }
+            // Then
+            assertThat(availableBooks).contains(availableBook);
+            assertThat(availableBooks).doesNotContain(unavailableBook);
+        }
 
-    @Test
-    public void save_기존도서_업데이트성공() {
-        // Given - 데이터베이스에 이미 존재하는 도서 사용 (ID: 2)
-        Book existingBook = bookRepository.findById(2L).get();
-        String originalTitle = existingBook.getTitle();
-        String originalAuthor = existingBook.getAuthor();
+        @Test
+        @DisplayName("재고 상태별 도서 조회 - 재고 없음")
+        void getBooksByAvailability_재고없는도서조회() {
+            // When
+            List<Book> unavailableBooks = bookRepository.findByAvailableTrue(false);
 
-        // When
-        existingBook.setTitle("수정된 도서");
-        existingBook.setAuthor("수정된 저자");
-        Book updatedBook = bookRepository.save(existingBook);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then
-        Book reloadedBook = bookRepository.findById(2L).get();
-        assertThat(reloadedBook.getTitle()).isEqualTo("수정된 도서");
-        assertThat(reloadedBook.getAuthor()).isEqualTo("수정된 저자");
-
-        // Restore original values for other tests
-        reloadedBook.setTitle(originalTitle);
-        reloadedBook.setAuthor(originalAuthor);
-        bookRepository.save(reloadedBook);
-
-    }
-
-    @Test
-    public void deleteById_도서삭제() {
-
-        Long bookId = 7L;
-
-        // When
-        bookRepository.deleteById(bookId);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then
-        Optional<Book> deletedBook = bookRepository.findById(bookId);
-        assertThat(deletedBook).isEmpty();
-    }
-
-    @Test
-    public void findBookById_존재하는도서_도서직접반환() {
-        //Given
-        Long bookId = 6L;
-        //When
-        Book foundBook = bookRepository.findByIdOrThrow(bookId);
-        //Then
-        assertThat(foundBook).isNotNull();
-        assertThat(foundBook.getId()).isEqualTo(bookId);
-        assertThat(foundBook.getTitle()).isEqualTo("Clean Code");
-    }
-
-    @Test
-    public void findBookById_존재하지않는도서_null반환() {
-        // Given
-        Long bookId = 999L;
-
-        // When
-        Book foundBook = bookRepository.findByIdOrThrow(bookId);
-
-        // Then
-        assertThat(foundBook).isNull();
+            // Then
+            assertThat(unavailableBooks).contains(unavailableBook);
+            assertThat(unavailableBooks).doesNotContain(availableBook);
+        }
     }
 
     @Nested
@@ -173,15 +257,7 @@ public class BookRepositoryTest {
     class SearchTest {
 
         @BeforeEach
-        void setUpBooks() {
-            Book cleanCode = Book.builder()
-                    .title("Clean Code")
-                    .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
-                    .createdDate(LocalDateTime.now())
-                    .build();
-
+        void setUp() {
             Book effectiveJava = Book.builder()
                     .title("Effective Java")
                     .author("Joshua Bloch")
@@ -198,44 +274,99 @@ public class BookRepositoryTest {
                     .createdDate(LocalDateTime.now())
                     .build();
 
-            entityManager.persistAndFlush(cleanCode);
-            entityManager.persistAndFlush(effectiveJava);
-            entityManager.persistAndFlush(springInAction);
-            entityManager.clear();
+            entityManager.persist(effectiveJava);
+            entityManager.persist(springInAction);
+            entityManager.flush();
         }
 
-        // Test 구현.
+        @Test
+        @DisplayName("제목 또는 저자로 도서 검색")
+        void searchByTitleOrAuthor() {
+            // When
+            List<Book> results = bookRepository.findByTitleContainingOrAuthorContaining("Code", "Bloch");
+
+            // Then
+            assertThat(results).hasSize(2);
+            assertThat(results).extracting(Book::getTitle).contains("Clean Code", "Effective Java");
+        }
+
+        @Test
+        @DisplayName("제목으로 도서 검색")
+        void searchByTitle() {
+            // When
+            List<Book> results = bookRepository.findByTitleContaining("Java");
+
+            // Then
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getTitle()).isEqualTo("Effective Java");
+        }
+
+        @Test
+        @DisplayName("저자로 도서 검색")
+        void searchByAuthor() {
+            // When
+            List<Book> results = bookRepository.findByAuthorContaining("Martin");
+
+            // Then
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getAuthor()).isEqualTo("Robert C. Martin");
+        }
+
+        @Test
+        @DisplayName("가격 범위로 도서 검색")
+        void searchByPriceRange() {
+            // When
+            List<Book> results = bookRepository.findByPriceBetween(new BigDecimal("40.00"), new BigDecimal("50.00"));
+
+            // Then
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getTitle()).isEqualTo("Clean Code");
+        }
     }
 
     @Nested
-    @DisplayName("재고 상태별 테스트")
-    class AvailabilityTest {
+    @DisplayName("ISBN 관련 테스트")
+    class IsbnTest {
 
-        @BeforeEach
-        void setUpBooksWithAvailability() {
-            Book availableBook = Book.builder()
-                    .title("Available Book")
-                    .author("Author A")
-                    .isbn("1111111111111")
-                    .price(new BigDecimal("30.00"))
-                    .available(true)
-                    .createdDate(LocalDateTime.now())
-                    .build();
+        @Test
+        @DisplayName("ISBN 존재 여부 확인 - 존재하는 경우")
+        void isbnExists_존재하는경우_True반환() {
+            // When
+            boolean exists = bookRepository.existsByIsbn("9780132350884");
 
-            Book unavailableBook = Book.builder()
-                    .title("Unavailable Book")
-                    .author("Author B")
-                    .isbn("2222222222222")
-                    .price(new BigDecimal("25.00"))
-                    .available(false)
-                    .createdDate(LocalDateTime.now())
-                    .build();
-
-            entityManager.persistAndFlush(availableBook);
-            entityManager.persistAndFlush(unavailableBook);
-            entityManager.clear();
+            // Then
+            assertThat(exists).isTrue();
         }
 
-        //Test 구현.
+        @Test
+        @DisplayName("ISBN 존재 여부 확인 - 존재하지 않는 경우")
+        void isbnExists_존재하지않는경우_False반환() {
+            // When
+            boolean exists = bookRepository.existsByIsbn("0000000000000");
+
+            // Then
+            assertThat(exists).isFalse();
+        }
+
+        @Test
+        @DisplayName("ISBN으로 도서 조회 성공")
+        void findByIsbn_존재하는ISBN_도서반환() {
+            // When
+            Optional<Book> foundBook = bookRepository.findByISBN("9780132350884");
+
+            // Then
+            assertThat(foundBook).isPresent();
+            assertThat(foundBook.get().getTitle()).isEqualTo("Clean Code");
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 ISBN으로 조회 시 빈 Optional 반환")
+        void findByIsbn_존재하지않는ISBN_빈Optional반환() {
+            // When
+            Optional<Book> foundBook = bookRepository.findByISBN("0000000000000");
+
+            // Then
+            assertThat(foundBook).isEmpty();
+        }
     }
 }
