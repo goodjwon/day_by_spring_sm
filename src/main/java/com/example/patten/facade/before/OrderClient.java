@@ -9,6 +9,7 @@ public class OrderClient {
     private final PaymentService paymentService = new PaymentService();
     private final ShippingService shippingService = new ShippingService();
     private final NotificationService notificationService = new NotificationService();
+    private final CouponService couponService = new CouponService();
 
     public void placeOrder() {
         System.out.println("--- 클라이언트가 직접 주문을 처리합니다. ---");
@@ -17,6 +18,11 @@ public class OrderClient {
         paymentService.processPayment("홍길동");
         shippingService.arrangeShipping("서울시 강남구");
         notificationService.sendNotification("홍길동");
+        couponService.checkStock("할인 쿠폰");
         System.out.println("--------------------------------------");
+
+        /** todo
+         * 이게 무슨 장점이 있지??
+         */
     }
 }
