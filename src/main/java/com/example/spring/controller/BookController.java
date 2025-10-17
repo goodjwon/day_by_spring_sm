@@ -41,7 +41,7 @@ public class BookController {
         log.info("도서 조회 요청 - ID: {}", id);
         BookResponse response = bookService.getBookById(id);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // 도서 목록 조회 API (GET /api/books)
@@ -69,13 +69,30 @@ public class BookController {
      * 도서 정보 수정 (PUT /api/books/{id})
      */
 
-    /**
+     /**
      * 도서 삭제 (DELETE /api/books/{id}) - Soft Delete
      */
+     @DeleteMapping("/{id}")
+     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+         log.info("도서 삭제 요청 - ID: {}", id);
+
+         bookService.deleteBook(id);
+
+         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+     }
 
     /**
      * 도서 복원 @PatchMapping("/{id}/restore")
      */
+    @PatchMapping("/{id}/restore")
+    public ResponseEntity<BookResponse> restoreBook(@PathVariable Long id) {
+        log.info("도서 복원 요청 - ID: {}", id);
+
+        bookService.restoreBook(id);
+        BookResponse response = bookService.getBookById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     /**
      * ISBN으로 도서 조회 @GetMapping("/isbn/{isbn}")
