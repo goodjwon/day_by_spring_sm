@@ -1,6 +1,8 @@
 package com.example.patten.observer.extra;
 
+import com.example.patten.observer.extra.event.UserRegisteredEvent;
 import com.example.patten.observer.extra.services.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -8,59 +10,34 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class UserService {
     private final AtomicLong idGenerator = new AtomicLong(1);
-    // 😱 의존성이 6개!!!
-    private final EmailService emailService;
-    private final SmsService smsService;
-    private final PointService pointService;
-    private final AnalyticsService analyticsService;
-    private final ReferralService referralService;
-    private final SlackService slackService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    // 😱 생성자 파라미터가 6개!!!
-    public UserService(
-            EmailService emailService,
-            SmsService smsService,
-            PointService pointService,
-            AnalyticsService analyticsService,
-            ReferralService referralService,
-            SlackService slackService) {
-        this.emailService = emailService;
-        this.smsService = smsService;
-        this.pointService = pointService;
-        this.analyticsService = analyticsService;
-        this.referralService = referralService;
-        this.slackService = slackService;
+    public UserService(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
     }
 
     public User registerUser(String email, String name, String phone, String referralCode) {
         System.out.println("\n" + "=".repeat(60));
-        System.out.println("🔴 STAGE 4: 회원가입 + 모든 부가 기능들...");
+        System.out.println("✅ FINAL: 옵저버 패턴으로 리팩토링 완료!");
         System.out.println("=".repeat(60));
 
-        // 1. 사용자 저장
+        // 1. 핵심 비즈니스 로직: 사용자 저장 (UserService의 본업!)
         User user = new User(email, name, phone);
         user.setId(idGenerator.getAndIncrement());
         System.out.println("✅ 회원가입 완료: " + user.getName());
 
-        // 2. 이메일 발송
-        emailService.sendWelcomeEmail(user.getEmail(), user.getName());
-
-        // 3. SMS 발송
-        smsService.sendVerificationSms(user.getPhone());
-
-        // 4. 포인트 지급
-        pointService.grantSignupPoints(user.getId(), 1000);
-
-        // 5. 통계 기록
-        analyticsService.trackSignup(user.getId(), user.getEmail());
-
-        // 6. 추천인 처리
-        if (referralCode != null) {
-            referralService.processReferral(referralCode, user.getId());
-        }
-
-        // 7. 슬랙 알림
-        slackService.notifyNewSignup(user.getName(), user.getEmail());
+        // 2. 이벤트 발행 - "회원가입 완료되었어요~" 외치기
+        // UserService는 누가 듣는지, 무엇을 하는지 전혀 모름!
+        System.out.println("📢 UserRegisteredEvent 발행 중...\n");
+        eventPublisher.publishEvent(
+                new UserRegisteredEvent(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getName(),
+                        user.getPhone(),
+                        referralCode
+                )
+        );
 
         System.out.println("=".repeat(60) + "\n");
         return user;

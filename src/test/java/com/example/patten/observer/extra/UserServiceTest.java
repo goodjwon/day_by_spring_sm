@@ -109,4 +109,49 @@ public class UserServiceTest {
 
         System.out.println("💡 해결책이 필요합니다! → 옵저버 패턴으로 리팩토링!");
     }
+
+    @Test
+    void final_옵저버_패턴_성공() {
+        System.out.println("\n🎉🎉🎉 옵저버 패턴으로 리팩토링! 🎉🎉🎉\n");
+        System.out.println("💬 PM: '카카오톡 알림도 추가해주세요!'");
+        System.out.println("👨‍💻 개발자: '네! 리스너만 추가하면 됩니다!' (자신감 뿜뿜)\n");
+
+        // When
+        User user = userService.registerUser(
+                "final@example.com",
+                "성공한개발자",
+                "010-9999-8888",
+                "BEST2024"
+        );
+
+        // Then
+        assertNotNull(user);
+        assertEquals("성공한개발자", user.getName());
+
+        System.out.println("\n✅✅✅ 리팩토링 완료! ✅✅✅");
+        System.out.println("📊 UserService 의존성: 1개만! (ApplicationEventPublisher)");
+        System.out.println("📏 UserService 코드 라인: 약 15줄 (Stage 4: 50줄 → 70% 감소!)");
+        System.out.println("\n🎯 개선 효과:");
+        System.out.println("  ✅ 낮은 결합도: UserService는 부가 기능들을 전혀 모름");
+        System.out.println("  ✅ OCP 준수: 새 기능 추가 시 기존 코드 수정 불필요");
+        System.out.println("  ✅ 단일 책임: 각 리스너가 자기 일만 처리");
+        System.out.println("  ✅ 테스트 용이: Mock 1개만 필요");
+        System.out.println("  ✅ 확장 용이: 리스너만 추가하면 끝!");
+        System.out.println("\n😊 만족도: ★★★★★ (완벽!)\n");
+    }
+
+    @Test
+    void 비교_Stage4_vs_Final() {
+        System.out.println("\n📊 Stage 4 vs Final 비교\n");
+        System.out.println("=" .repeat(80));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "항목", "Stage 4 (Before)", "Final (After)"));
+        System.out.println("=".repeat(80));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "의존성 개수", "6개", "1개"));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "UserService 코드 라인", "약 50줄", "약 15줄"));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "새 기능 추가 시", "UserService 수정", "Listener만 추가"));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "테스트 Mock 개수", "6개", "1개"));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "결합도", "높음 (강결합)", "낮음 (느슨한 결합)"));
+        System.out.println(String.format("%-30s | %-20s | %-20s", "OCP (개방-폐쇄 원칙)", "위반", "준수"));
+        System.out.println("=".repeat(80) + "\n");
+    }
 }
