@@ -259,22 +259,17 @@ public class BookControllerTest {
     @Nested
     @DisplayName("도서 복원")
     class RestoreBookTest {
-//
-//        @Test
-//        @DisplayName("도서 복원 성공")
-//        void restoreBook_삭제된도서_복원성공() throws Exception {
-//            // Given
-//            given(bookService.getBookById(1L)).willReturn(Optional.of(BookResponse.from(testBook)));
-//
-//            // When & Then
-//            mockMvc.perform(patch("/api/books/1/restore"))
-//                    .andDo(print())
-//                    .andExpect(status().isOk())
-//                    .andExpect(jsonPath("$.id").value(1L));
-//
-//            verify(bookService).restoreBook(1L);
-//            verify(bookService).getBookById(1L);
-//        }
+
+        @Test
+        @DisplayName("도서 복원 성공")
+        void restoreBook_삭제된도서_복원성공() throws Exception {
+            // When & Then
+            mockMvc.perform(patch("/api/books/1/restore"))
+                    .andDo(print())
+                    .andExpect(status().isNoContent());
+
+            verify(bookService).restoreBook(1L);
+        }
     }
 
 
