@@ -55,6 +55,7 @@ public class BookController {
                     .available(true)
                     .build();
         }
+      
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -110,6 +111,7 @@ public class BookController {
         bookService.restoreBook(id);
         log.info("도서 복원 성공 - ID: {}", id);
         return ResponseEntity.noContent().build();
+
     }
 
     /**

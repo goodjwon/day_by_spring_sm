@@ -8,6 +8,7 @@ public class OrderFacade {
     private final PaymentService paymentService = new PaymentService();
     private final ShippingService shippingService = new ShippingService();
     private final NotificationService notificationService = new NotificationService();
+    private final CouponService couponService = new CouponService();
 
     // 2. 클라이언트에게는 단순화된 단일 메서드만 제공
     public void placeOrder(String item, String user, String address) {
@@ -17,6 +18,7 @@ public class OrderFacade {
         paymentService.processPayment(user);
         shippingService.arrangeShipping(address);
         notificationService.sendNotification(user);
+        couponService.checkStock(item);
         System.out.println("✅ [파사드] 모든 주문 절차가 완료되었습니다.");
     }
 }
