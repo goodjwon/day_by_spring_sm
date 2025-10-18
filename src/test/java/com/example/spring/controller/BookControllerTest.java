@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -179,7 +180,8 @@ public class BookControllerTest {
     class UpdateBookTest {
         @Test
         @DisplayName("도서 수정 성공")
-        void updateBook_유효한요청_수정성공() throws Exception {}
+        void updateBook_유효한요청_수정성공() throws Exception {
+        }
 
         @Test
         @DisplayName("도서 삭제 성공")
@@ -205,14 +207,24 @@ public class BookControllerTest {
     class AvailabilityTest {
         @Test
         @DisplayName("재고 상태 업데이트 성공")
-        void updateBookAvailability_유효한상태_업데이트성공() throws Exception {}
+        void updateBookAvailability_유효한상태_업데이트성공() throws Exception {
+            //Given
+            given(bookService.updateBookAvailability(1L, true));
+            //When
+            mockMvc.perform(put("/api/v1/books/{id}/availability", 1L))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("true"));
+
+            verify(bookService).updateBookAvailability(1L, true);
+            //Then
+        }
 
     }
 
     @Test
     @DisplayName("재고 상태별 도서 조회")
     void getBooksByAvailability_재고상태_조회성공() throws Exception {
-
     }
 
 
