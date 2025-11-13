@@ -283,210 +283,212 @@ class LoanTest {
         }
     }
 
-//    @Nested
-//    @DisplayName("연체 일수 계산 테스트")
-//    class GetOverdueDaysTest {
-//
-//        @Test
-//        @DisplayName("연체되지 않은 경우 - 0일 반환")
-//        void returnZeroWhenNotOverdue() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .build();
-//
-//            // when & then
-//            assertThat(loan.getOverdueDays()).isEqualTo(0);
-//        }
-//
-//        @Test
-//        @DisplayName("연체된 경우 - 정확한 연체 일수 반환")
-//        void returnCorrectOverdueDays() {
-//            // given
-//            LocalDateTime now = LocalDateTime.now();
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(now.minusDays(20))
-//                    .dueDate(now.minusDays(5))
-//                    .build();
-//
-//            // when
-//            long overdueDays = loan.getOverdueDays();
-//
-//            // then
-//            assertThat(overdueDays).isGreaterThanOrEqualTo(4);
-//            assertThat(overdueDays).isLessThanOrEqualTo(5);
-//        }
-//
-//        @Test
-//        @DisplayName("이미 반납된 경우 - 0일 반환")
-//        void returnZeroWhenAlreadyReturned() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(20))
-//                    .dueDate(LocalDateTime.now().minusDays(6))
-//                    .returnDate(LocalDateTime.now().minusDays(5))
-//                    .build();
-//
-//            // when & then
-//            assertThat(loan.getOverdueDays()).isEqualTo(0);
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("연체료 계산 테스트")
-//    class CalculateOverdueFeeTest {
-//
-//        @Test
-//        @DisplayName("연체되지 않은 경우 - 연체료 0원")
-//        void returnZeroFeeWhenNotOverdue() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .build();
-//
-//            // when
-//            BigDecimal fee = loan.calculateOverdueFee();
-//
-//            // then
-//            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
-//        }
-//
-//        @Test
-//        @DisplayName("5일 연체 - 연체료 5000원")
-//        void returnCorrectFeeFor5DaysOverdue() {
-//            // given
-//            LocalDateTime now = LocalDateTime.now();
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(now.minusDays(20))
-//                    .dueDate(now.minusDays(5))
-//                    .build();
-//
-//            // when
-//            BigDecimal fee = loan.calculateOverdueFee();
-//
-//            // then - 4일 ~ 5일 사이의 연체료 (4000 ~ 5000원)
-//            assertThat(fee).isGreaterThanOrEqualTo(new BigDecimal("4000"));
-//            assertThat(fee).isLessThanOrEqualTo(new BigDecimal("5000"));
-//        }
-//
-//        @Test
-//        @DisplayName("1일 연체 - 연체료 1000원")
-//        void returnCorrectFeeFor1DayOverdue() {
-//            // given
-//            LocalDateTime now = LocalDateTime.now();
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(now.minusDays(16))
-//                    .dueDate(now.minusDays(1))
-//                    .build();
-//
-//            // when
-//            BigDecimal fee = loan.calculateOverdueFee();
-//
-//            // then - 0일 ~ 1일 사이의 연체료 (0 ~ 1000원)
-//            assertThat(fee).isGreaterThanOrEqualTo(BigDecimal.ZERO);
-//            assertThat(fee).isLessThanOrEqualTo(new BigDecimal("1000"));
-//        }
-//
-//        @Test
-//        @DisplayName("이미 반납된 경우 - 연체료 0원")
-//        void returnZeroFeeWhenAlreadyReturned() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(20))
-//                    .dueDate(LocalDateTime.now().minusDays(6))
-//                    .returnDate(LocalDateTime.now().minusDays(5))
-//                    .build();
-//
-//            // when
-//            BigDecimal fee = loan.calculateOverdueFee();
-//
-//            // then
-//            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("도서 반납 테스트")
-//    class ReturnBookTest {
-//
-//        @Test
-//        @DisplayName("정상 반납 - 반납일시 설정 및 상태 변경")
-//        void returnBookSuccessfully() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .build();
-//
-//            // when
-//            loan.returnBook();
-//
-//            // then
-//            assertThat(loan.getReturnDate()).isNotNull();
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-//            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
-//        }
-//
-//        @Test
-//        @DisplayName("연체 후 반납 - 연체료 자동 계산")
-//        void returnBookWithOverdueFee() {
-//            // given
-//            LocalDateTime now = LocalDateTime.now();
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(now.minusDays(20))
-//                    .dueDate(now.minusDays(5))
-//                    .build();
-//
-//            // when
-//            loan.returnBook();
-//
-//            // then
-//            assertThat(loan.getReturnDate()).isNotNull();
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-//            assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
-//        }
-//
-//        @Test
-//        @DisplayName("반납 시 현재 시간으로 반납일시 설정")
-//        void returnDateShouldBeNow() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .build();
-//
-//            LocalDateTime beforeReturn = LocalDateTime.now();
-//
-//            // when
-//            loan.returnBook();
-//
-//            // then
-//            LocalDateTime afterReturn = LocalDateTime.now();
-//            assertThat(loan.getReturnDate()).isBetween(beforeReturn, afterReturn);
-//        }
-//    }
+    @Nested
+    @DisplayName("연체 일수 계산 테스트")
+    class GetOverdueDaysTest {
+
+        @Test
+        @DisplayName("연체되지 않은 경우 - 0일 반환")
+        void returnZeroWhenNotOverdue() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .build();
+
+            // when & then
+            assertThat(loan.getOverdueDays()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("연체된 경우 - 정확한 연체 일수 반환")
+        void returnCorrectOverdueDays() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(now.minusDays(20))
+                    .dueDate(now.minusDays(5))
+                    .build();
+
+            // when
+            long overdueDays = loan.getOverdueDays();
+
+            // then
+            assertThat(overdueDays).isGreaterThanOrEqualTo(4);
+            assertThat(overdueDays).isLessThanOrEqualTo(5);
+        }
+
+        @Test
+        @DisplayName("이미 반납된 경우 - 0일 반환")
+        void returnZeroWhenAlreadyReturned() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(20))
+                    .dueDate(LocalDateTime.now().minusDays(6))
+                    .returnDate(LocalDateTime.now().minusDays(5))
+                    .build();
+
+            // when & then
+            assertThat(loan.getOverdueDays()).isEqualTo(0);
+        }
+    }
+
+    @Nested
+    @DisplayName("연체료 계산 테스트")
+    class CalculateOverdueFeeTest {
+
+        private final LocalDateTime baseTime = LocalDateTime.now();
+
+        @Test
+        @DisplayName("연체되지 않은 경우 - 연체료 0원")
+        void returnZeroFeeWhenNotOverdue() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .build();
+
+            // when
+            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+
+            // then
+            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("5일 연체 - 연체료 5000원")
+        void returnCorrectFeeFor5DaysOverdue() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(now.minusDays(20))
+                    .dueDate(now.minusDays(5))
+                    .build();
+
+            // when
+            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+
+            // then - 4일 ~ 5일 사이의 연체료 (4000 ~ 5000원)
+            assertThat(fee).isGreaterThanOrEqualTo(new BigDecimal("4000"));
+            assertThat(fee).isLessThanOrEqualTo(new BigDecimal("5000"));
+        }
+
+        @Test
+        @DisplayName("1일 연체 - 연체료 1000원")
+        void returnCorrectFeeFor1DayOverdue() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(now.minusDays(16))
+                    .dueDate(now.minusDays(1))
+                    .build();
+
+            // when
+            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+
+            // then - 0일 ~ 1일 사이의 연체료 (0 ~ 1000원)
+            assertThat(fee).isGreaterThanOrEqualTo(BigDecimal.ZERO);
+            assertThat(fee).isLessThanOrEqualTo(new BigDecimal("1000"));
+        }
+
+        @Test
+        @DisplayName("이미 반납된 경우 - 연체료 0원")
+        void returnZeroFeeWhenAlreadyReturned() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(20))
+                    .dueDate(LocalDateTime.now().minusDays(6))
+                    .returnDate(LocalDateTime.now().minusDays(5))
+                    .build();
+
+            // when
+            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+
+            // then
+            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 반납 테스트")
+    class ReturnBookTest {
+
+        @Test
+        @DisplayName("정상 반납 - 반납일시 설정 및 상태 변경")
+        void returnBookSuccessfully() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .build();
+
+            // when
+            loan.returnBook();
+
+            // then
+            assertThat(loan.getReturnDate()).isNotNull();
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
+            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("연체 후 반납 - 연체료 자동 계산")
+        void returnBookWithOverdueFee() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(now.minusDays(20))
+                    .dueDate(now.minusDays(5))
+                    .build();
+
+            // when
+            loan.returnBook();
+
+            // then
+            assertThat(loan.getReturnDate()).isNotNull();
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
+            assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("반납 시 현재 시간으로 반납일시 설정")
+        void returnDateShouldBeNow() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .build();
+
+            LocalDateTime beforeReturn = LocalDateTime.now();
+
+            // when
+            loan.returnBook();
+
+            // then
+            LocalDateTime afterReturn = LocalDateTime.now();
+            assertThat(loan.getReturnDate()).isBetween(beforeReturn, afterReturn);
+        }
+    }
 //
 //    @Nested
 //    @DisplayName("대여 연장 테스트")
@@ -818,4 +820,4 @@ class LoanTest {
 //            assertThat(loanString).contains("ACTIVE");
 //        }
 //    }
-}
+    }

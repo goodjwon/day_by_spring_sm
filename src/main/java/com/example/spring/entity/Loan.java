@@ -60,32 +60,59 @@ public class Loan {
      * 연체는 납부하기로한 시간이 지난 경우. 지금시점.
      */
     public boolean isOverdue(){
+        return isOverdue(LocalDateTime.now());
+    }
+
+    public boolean isOverdue(LocalDateTime currentTime){
         if(returnDate != null){
             return false;   // 이미 반납된 경우.
         }
 
-        return LocalDateTime.now().isAfter(returnDate);
+        return currentTime.isAfter(this.dueDate);
     }
 
 
     /**
      * 연체 일수 계산
      */
-    public long getOverdueDays(){
-        if (!isOverdue()) {
+    public long getOverdueDays(LocalDateTime currentTime){
+        if (!isOverdue(currentTime)) {
             return 0;
         }
 
-        return ChronoUnit.DAYS.between(dueDate, LocalDateTime.now());
+        return ChronoUnit.DAYS.between(dueDate, currentTime);
+    }
+
+    public long getOverdueDays(){
+        return getOverdueDays(LocalDateTime.now());
     }
 
     /**
      * 연체료 계산 (일당 1000원)
      */
+    public static final BigDecimal FEE_PAR_DAY = new BigDecimal("1000");
+    public BigDecimal calculateOverdueFee(LocalDateTime currentTime){
+        long days = getOverdueDays(currentTime);
+        return  FEE_PAR_DAY.multiply(BigDecimal.valueOf(days));
+    }
 
     /**
      * 도서 반납 처리
      */
+    public void returnBook(LocalDateTime returnTime) {
+        if (this.returnDate != null) {
+            throw new IllegalStateException("반납된 도서입니다");
+        }
+
+        this.returnDate = returnTime;
+        this.status = LoanStatus.RETURNED;
+
+        this.overdueFee = calculateOverdueFee(returnTime);
+    }
+
+    public void returnBook() {
+        returnBook(LocalDateTime.now());
+    }
 
     /**
      * 대여 연장 (14일)
