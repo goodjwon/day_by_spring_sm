@@ -94,10 +94,10 @@ public class LoanRepositoryTest {
                 .dueDate(LocalDate.now().plusWeeks(2).atStartOfDay())
                 .build();
         Loan savedLoan = loanRepository.save(newloan);
-        Integer loanId = savedLoan.getId();
+        Long loanId = savedLoan.getId();
 
         //When
-        Optional<Loan> foundLoan = loanRepository.findById(Math.toIntExact((long) savedLoan.getId()));
+        Optional<Loan> foundLoan = loanRepository.findById(loanId);
 
         //Then
         assertThat(foundLoan).isPresent();
@@ -113,7 +113,7 @@ public class LoanRepositoryTest {
         //Given
         Long loanId = 150L;
         //When
-        Optional<Loan> foundLoan = loanRepository.findById(Math.toIntExact(loanId));
+        Optional<Loan> foundLoan = loanRepository.findById(loanId);
         //Then
         assertThat(foundLoan).isEmpty();
     }
@@ -134,7 +134,7 @@ public class LoanRepositoryTest {
                 memberRepository.save(Member.builder().name("이회원").email("lee@example.com").build()),
                 bookRepository.save(createBook("책3", "3333"))
         ));
-        Integer loanId = savedLoan.getId();
+        Long loanId = savedLoan.getId();
         //When
         Loan foundLoan = loanRepository.findByIdOrThrow(loanId);
         //Then
@@ -148,7 +148,7 @@ public class LoanRepositoryTest {
         //Given
         Long nonExistentId = 999L;
         //When
-        Loan foundLoan = loanRepository.findByIdOrThrow(Math.toIntExact(nonExistentId));
+        Loan foundLoan = loanRepository.findByIdOrThrow(nonExistentId);
         //Then
         assertThat(foundLoan).isNull();
     }

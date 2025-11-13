@@ -7,10 +7,10 @@ import java.util.Optional;
 
 public interface LoanRepository {
     Loan save(Loan loan);
-    Optional<Loan> findById(Integer id);
+    Optional<Loan> findById(Long id);
     List<Loan> findAll();
 
-    default Loan findByIdOrThrow(Integer id){
+    default Loan findByIdOrThrow(Long id){
         return findById(id).orElse(null);
     }
 }
