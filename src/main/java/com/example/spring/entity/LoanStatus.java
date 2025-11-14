@@ -13,7 +13,7 @@ public enum LoanStatus {
     /**
      * 연체
      */
-
+    OVERDUE("대여 연체 중"),
     /**
      * 취소됨
      */
