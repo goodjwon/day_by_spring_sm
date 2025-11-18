@@ -65,79 +65,68 @@ public class Loan {
      * 연체는 납부하기로한 시간이 지난 경우. 지금시점.
      */
     public boolean isOverdue(){
-        return isOverdue(LocalDateTime.now());
-    }
-
-    public boolean isOverdue(LocalDateTime currentTime){
         if(returnDate != null){
             return false;
         }
 
-        return currentTime.isAfter(this.dueDate);
+        return LocalDateTime.now().isAfter(this.dueDate);
+
     }
 
 
     /**
      * 연체 일수 계산
      */
-    public long getOverdueDays(LocalDateTime currentTime){
-        if (!isOverdue(currentTime)) {
+    public long getOverdueDays(){
+        if (!isOverdue()) {
             return 0;
         }
 
-        return ChronoUnit.DAYS.between(dueDate, currentTime);
-    }
-
-    public long getOverdueDays(){
-        return getOverdueDays(LocalDateTime.now());
+        return ChronoUnit.DAYS.between(dueDate, LocalDateTime.now());
     }
 
     /**
      * 연체료 계산 (일당 1000원)
      */
-    public static final BigDecimal FEE_PAR_DAY = new BigDecimal("1000");
-    public BigDecimal calculateOverdueFee(LocalDateTime currentTime){
-        long days = getOverdueDays(currentTime);
-        return  FEE_PAR_DAY.multiply(BigDecimal.valueOf(days));
+    public BigDecimal calculateOverdueFee(){
+        long overdueDays = getOverdueDays();
+        if (getOverdueDays() <= 0){
+            return BigDecimal.ZERO;
+        }
+
+        return  BigDecimal.valueOf(overdueDays * 1000);
     }
 
     /**
      * 도서 반납 처리
      */
-    public void returnBook(LocalDateTime returnTime) {
+    public void returnBook() {
         if (this.returnDate != null) {
             throw new IllegalStateException("반납된 도서입니다");
         }
 
-        this.returnDate = returnTime;
+        this.overdueFee = calculateOverdueFee();
+        this.returnDate = LocalDateTime.now();
         this.status = LoanStatus.RETURNED;
 
-        this.overdueFee = calculateOverdueFee(returnTime);
-    }
-
-    public void returnBook() {
-        returnBook(LocalDateTime.now());
+        this.returnDate = LocalDateTime.now();
     }
 
     /**
      * 대여 연장 (14일)
      */
-    public void extendLoan(int day, LocalDateTime  currentTime) {
+    public void extendLoan(int days) {
         if (this.returnDate != null) {
             throw new IllegalStateException("이미 반납된 대여는 연장할 수 없습니다");
         }
-        if (isOverdue(currentTime)) {
+        if (isOverdue()) {
             throw new IllegalStateException("연체된 대여는 연장할 수 없습니다");
         }
-        if (day <= 0) {
+        if (days <= 0) {
             throw new IllegalStateException("연장 일수는 0보다 커야합니다");
         }
 
-        this.dueDate = this.dueDate.plusDays(day);
-    }
-
-    public void extendLoan(int days) {
-        extendLoan(days, LocalDateTime.now());
+        this.dueDate = this.dueDate.plusDays(days);
     }
 
     /**
@@ -147,6 +136,7 @@ public class Loan {
         if (this.status == LoanStatus.CANCELLED) {
             throw new IllegalStateException("이미 취소된 대여입니다");
         }
+
         if (this.returnDate != null) {
             throw new IllegalStateException("이미 반납된 대여는 취소할 수 없습니다");
         }
@@ -157,31 +147,15 @@ public class Loan {
     /**
      * 대여 상태 업데이트 (연체 확인)
      */
-    public void updateStatus(LocalDateTime currentTime) {
-        if (this.status == LoanStatus.CANCELLED || this.status == LoanStatus.RETURNED) {
-            return;
-        }
-
-        if (isOverdue(currentTime)) {
-            this.status = LoanStatus.OVERDUE;
-            this.overdueFee = calculateOverdueFee(currentTime);
-            this.updatedDate = LocalDateTime.now();
-        }else {
-            this.status = LoanStatus.ACTIVE;
-            this.overdueFee = BigDecimal.ZERO;
-        }
-
-        if (this.returnDate != null) {
-            this.status = LoanStatus.RETURNED;
-            this.overdueFee = calculateOverdueFee(this.returnDate);
-            return;
-        }
-    }
-
     public void updateStatus() {
-        updateStatus(LocalDateTime.now());
+
+        if(this.returnDate != null){
+            this.status = LoanStatus.RETURNED;
+        } else if(isOverdue()){
+            this.status = LoanStatus.OVERDUE;
+            this.overdueFee = calculateOverdueFee();
+        } else {
+            this.status = LoanStatus.ACTIVE;
+        }
     }
-
-
-
 }
