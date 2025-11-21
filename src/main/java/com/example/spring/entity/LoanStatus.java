@@ -10,10 +10,12 @@ public enum LoanStatus {
      * 반납 완료
      */
     RETURNED("반납 완료"),
+
     /**
      * 연체
      */
-    OVERDUE("대여 연체 중"),
+    OVERDUE("연체"),
+
     /**
      * 취소됨
      */

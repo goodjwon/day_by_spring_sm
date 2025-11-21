@@ -357,7 +357,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then
             assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
@@ -376,7 +376,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then - 4일 ~ 5일 사이의 연체료 (4000 ~ 5000원)
             assertThat(fee).isGreaterThanOrEqualTo(new BigDecimal("4000"));
@@ -396,7 +396,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then - 0일 ~ 1일 사이의 연체료 (0 ~ 1000원)
             assertThat(fee).isGreaterThanOrEqualTo(BigDecimal.ZERO);
@@ -416,7 +416,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then
             assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
@@ -460,11 +460,13 @@ class LoanTest {
                     .build();
 
             // when
-            loan.updateStatus(now);
+            loan.returnBook();
 
             // then
-            assertThat(loan.getStatus()).isEqualTo(LoanStatus.OVERDUE);
-            assertThat(loan.getOverdueFee()).isEqualByComparingTo(new BigDecimal("5000"));
+            assertThat(loan.getReturnDate()).isNotNull();
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
+            assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
+
         }
 
         @Test
@@ -506,7 +508,7 @@ class LoanTest {
                     .build();
 
             // when
-            loan.extendLoan(7, originalDueDate);
+            loan.extendLoan(7);
 
             // then
             assertThat(loan.getDueDate()).isEqualTo(originalDueDate.plusDays(7));
@@ -526,7 +528,7 @@ class LoanTest {
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> loan.extendLoan(7, originalDueDate))
+            assertThatThrownBy(() -> loan.extendLoan(7))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessage("이미 반납된 대여는 연장할 수 없습니다");
         }
@@ -543,7 +545,7 @@ class LoanTest {
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> loan.extendLoan(7, LocalDateTime.now()))
+            assertThatThrownBy(() -> loan.extendLoan(7))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessage("연체된 대여는 연장할 수 없습니다");
         }
@@ -561,7 +563,7 @@ class LoanTest {
                     .build();
 
             // when
-            loan.extendLoan(14,  originalDueDate);
+            loan.extendLoan(14);
 
             // then
             assertThat(loan.getDueDate()).isEqualTo(originalDueDate.plusDays(14));
@@ -685,7 +687,7 @@ class LoanTest {
                     .build();
 
             // when
-            loan.updateStatus(LocalDateTime.now());
+            loan.updateStatus();
 
             // then
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
