@@ -357,7 +357,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then
             assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
@@ -376,7 +376,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then - 4일 ~ 5일 사이의 연체료 (4000 ~ 5000원)
             assertThat(fee).isGreaterThanOrEqualTo(new BigDecimal("4000"));
@@ -396,7 +396,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then - 0일 ~ 1일 사이의 연체료 (0 ~ 1000원)
             assertThat(fee).isGreaterThanOrEqualTo(BigDecimal.ZERO);
@@ -416,7 +416,7 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee(baseTime);
+            BigDecimal fee = loan.calculateOverdueFee();
 
             // then
             assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
