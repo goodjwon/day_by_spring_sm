@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Entity
 @Table(name = "loan")
@@ -47,6 +48,9 @@ public class Loan {
     @Column(name = "due_date", nullable = false)
     private LocalDateTime dueDate;
 
+    @CreatedDate
+    @Column(name = "updated_date")
+    private LocalDateTime updatedDate;
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
@@ -62,10 +66,10 @@ public class Loan {
      */
     public boolean isOverdue(){
         if(returnDate != null){
-            return false;   // 이미 반납된 경우.
+            return false;
         }
 
-        return LocalDateTime.now().isAfter(dueDate);
+        return LocalDateTime.now().isAfter(this.dueDate);
     }
 
 
@@ -96,7 +100,7 @@ public class Loan {
     /**
      * 도서 반납 처리
      */
-    public void returnBook(LocalDateTime returnTime) {
+    public void returnBook() {
         if (this.returnDate != null) {
             throw new IllegalStateException("반납된 도서입니다");
         }
@@ -105,36 +109,53 @@ public class Loan {
         this.overdueFee = calculateOverdueFee();
 
         // 반납 정보 설정
-        this.returnDate = returnTime;
+        this.returnDate = LocalDateTime.now();
         this.status = LoanStatus.RETURNED;
-    }
-
-    public void returnBook() {
-        returnBook(LocalDateTime.now());
     }
 
     /**
      * 대여 연장 (14일)
      */
+    public void extendLoan(int days) {
+        if (this.returnDate != null) {
+            throw new IllegalStateException("이미 반납된 대여는 연장할 수 없습니다");
+        }
+        if (isOverdue()) {
+            throw new IllegalStateException("연체된 대여는 연장할 수 없습니다");
+        }
+        if (days <= 0) {
+            throw new IllegalStateException("연장 일수는 0보다 커야합니다");
+        }
 
+        this.dueDate = this.dueDate.plusDays(days);
+    }
 
     /**
      * 대여 취소
      */
+    public void cancelLoan() {
+        if (this.status == LoanStatus.CANCELLED) {
+            throw new IllegalStateException("이미 취소된 대여입니다");
+        }
+
+        if (this.returnDate != null) {
+            throw new IllegalStateException("이미 반납된 대여는 취소할 수 없습니다");
+        }
+
+        this.status = LoanStatus.CANCELLED;
+    }
 
     /**
      * 대여 상태 업데이트 (연체 확인)
      */
     public void updateStatus() {
-        if (this.returnDate != null) {
+        if(this.returnDate != null){
             this.status = LoanStatus.RETURNED;
-        } else if (isOverdue()) {
+        } else if(isOverdue()){
             this.status = LoanStatus.OVERDUE;
+            this.overdueFee = calculateOverdueFee();
         } else {
             this.status = LoanStatus.ACTIVE;
         }
     }
-
-
-
 }

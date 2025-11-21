@@ -466,6 +466,7 @@ class LoanTest {
             assertThat(loan.getReturnDate()).isNotNull();
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
             assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
+
         }
 
         @Test
@@ -489,335 +490,337 @@ class LoanTest {
             assertThat(loan.getReturnDate()).isBetween(beforeReturn, afterReturn);
         }
     }
-//
-//    @Nested
-//    @DisplayName("대여 연장 테스트")
-//    class ExtendLoanTest {
-//
-//        @Test
-//        @DisplayName("정상 연장 - 반납예정일 연장")
-//        void extendLoanSuccessfully() {
-//            // given
-//            LocalDateTime originalDueDate = LocalDateTime.now().plusDays(4);
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(originalDueDate)
-//                    .build();
-//
-//            // when
-//            loan.extendLoan(7);
-//
-//            // then
-//            assertThat(loan.getDueDate()).isEqualTo(originalDueDate.plusDays(7));
-//        }
-//
-//        @Test
-//        @DisplayName("이미 반납된 대여 연장 시도 - 예외 발생")
-//        void throwExceptionWhenExtendingReturnedLoan() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .returnDate(LocalDateTime.now())
-//                    .build();
-//
-//            // when & then
-//            assertThatThrownBy(() -> loan.extendLoan(7))
-//                    .isInstanceOf(IllegalStateException.class)
-//                    .hasMessage("이미 반납된 대여는 연장할 수 없습니다");
-//        }
-//
-//        @Test
-//        @DisplayName("연체된 대여 연장 시도 - 예외 발생")
-//        void throwExceptionWhenExtendingOverdueLoan() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(20))
-//                    .dueDate(LocalDateTime.now().minusDays(5))
-//                    .build();
-//
-//            // when & then
-//            assertThatThrownBy(() -> loan.extendLoan(7))
-//                    .isInstanceOf(IllegalStateException.class)
-//                    .hasMessage("연체된 대여는 연장할 수 없습니다");
-//        }
-//
-//        @Test
-//        @DisplayName("14일 연장")
-//        void extend14Days() {
-//            // given
-//            LocalDateTime originalDueDate = LocalDateTime.now().plusDays(4);
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(originalDueDate)
-//                    .build();
-//
-//            // when
-//            loan.extendLoan(14);
-//
-//            // then
-//            assertThat(loan.getDueDate()).isEqualTo(originalDueDate.plusDays(14));
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("대여 취소 테스트")
-//    class CancelTest {
-//
-//        @Test
-//        @DisplayName("정상 취소 - 상태 변경")
-//        void cancelLoanSuccessfully() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now())
-//                    .dueDate(LocalDateTime.now().plusDays(14))
-//                    .build();
-//
-//            // when
-//            loan.cancel();
-//
-//            // then
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.CANCELLED);
-//            assertThat(loan.getReturnDate()).isNull();
-//        }
-//
-//        @Test
-//        @DisplayName("이미 반납된 대여 취소 시도 - 예외 발생")
-//        void throwExceptionWhenCancellingReturnedLoan() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .returnDate(LocalDateTime.now())
-//                    .build();
-//
-//            // when & then
-//            assertThatThrownBy(() -> loan.cancel())
-//                    .isInstanceOf(IllegalStateException.class)
-//                    .hasMessage("이미 반납된 대여는 취소할 수 없습니다");
-//        }
-//
-//        @Test
-//        @DisplayName("연체된 대여도 취소 가능")
-//        void canCancelOverdueLoan() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(20))
-//                    .dueDate(LocalDateTime.now().minusDays(5))
-//                    .build();
-//
-//            // when
-//            loan.cancel();
-//
-//            // then
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.CANCELLED);
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("대여 상태 업데이트 테스트")
-//    class UpdateStatusTest {
-//
-//        @Test
-//        @DisplayName("정상 대여 - ACTIVE 상태 유지")
-//        void updateToActiveWhenNormal() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .build();
-//
-//            // when
-//            loan.updateStatus();
-//
-//            // then
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
-//            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
-//        }
-//
-//        @Test
-//        @DisplayName("연체 발생 - OVERDUE 상태로 변경 및 연체료 계산")
-//        void updateToOverdueWhenPastDueDate() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(20))
-//                    .dueDate(LocalDateTime.now().minusDays(5))
-//                    .status(LoanStatus.ACTIVE)
-//                    .build();
-//
-//            // when
-//            loan.updateStatus();
-//
-//            // then
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.OVERDUE);
-//            assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
-//        }
-//
-//        @Test
-//        @DisplayName("반납 완료 - RETURNED 상태로 변경")
-//        void updateToReturnedWhenReturned() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .returnDate(LocalDateTime.now())
-//                    .status(LoanStatus.ACTIVE)
-//                    .build();
-//
-//            // when
-//            loan.updateStatus();
-//
-//            // then
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-//        }
-//
-//        @Test
-//        @DisplayName("OVERDUE에서 ACTIVE로 상태 변경 안됨 (returnDate 있을 때)")
-//        void notChangeFromOverdueToActive() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now().minusDays(10))
-//                    .dueDate(LocalDateTime.now().plusDays(4))
-//                    .returnDate(LocalDateTime.now())
-//                    .status(LoanStatus.OVERDUE)
-//                    .overdueFee(new BigDecimal("5000"))
-//                    .build();
-//
-//            // when
-//            loan.updateStatus();
-//
-//            // then
-//            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("Audit 기능 테스트")
-//    class AuditTest {
-//
-//        @Test
-//        @DisplayName("생성 시간과 수정 시간 필드 존재 확인")
-//        void auditFieldsExist() {
-//            // given & when
-//            Loan loan = Loan.builder()
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now())
-//                    .dueDate(LocalDateTime.now().plusDays(14))
-//                    .createdDate(LocalDateTime.now())
-//                    .updatedDate(LocalDateTime.now())
-//                    .build();
-//
-//            // then
-//            assertThat(loan.getCreatedDate()).isNotNull();
-//            assertThat(loan.getUpdatedDate()).isNotNull();
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("동등성 및 해시코드 테스트")
-//    class EqualsAndHashCodeTest {
-//
-//        @Test
-//        @DisplayName("같은 ID를 가진 Loan 객체는 동등함")
-//        void loansWithSameIdShouldBeEqual() {
-//            // given
-//            LocalDateTime loanDate = LocalDateTime.now();
-//            LocalDateTime dueDate = loanDate.plusDays(14);
-//
-//            Loan loan1 = Loan.builder()
-//                    .id(1L)
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(loanDate)
-//                    .dueDate(dueDate)
-//                    .build();
-//
-//            Loan loan2 = Loan.builder()
-//                    .id(1L)
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(loanDate)
-//                    .dueDate(dueDate)
-//                    .build();
-//
-//            // when & then
-//            assertThat(loan1).isEqualTo(loan2);
-//            assertThat(loan1.hashCode()).isEqualTo(loan2.hashCode());
-//        }
-//
-//        @Test
-//        @DisplayName("다른 ID를 가진 Loan 객체는 다름")
-//        void loansWithDifferentIdShouldNotBeEqual() {
-//            // given
-//            LocalDateTime loanDate = LocalDateTime.now();
-//            LocalDateTime dueDate = loanDate.plusDays(14);
-//
-//            Loan loan1 = Loan.builder()
-//                    .id(1L)
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(loanDate)
-//                    .dueDate(dueDate)
-//                    .build();
-//
-//            Loan loan2 = Loan.builder()
-//                    .id(2L)
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(loanDate)
-//                    .dueDate(dueDate)
-//                    .build();
-//
-//            // when & then
-//            assertThat(loan1).isNotEqualTo(loan2);
-//        }
-//    }
-//
-//    @Nested
-//    @DisplayName("toString 테스트")
-//    class ToStringTest {
-//
-//        @Test
-//        @DisplayName("toString 메서드가 주요 필드를 포함함")
-//        void toStringShouldContainMainFields() {
-//            // given
-//            Loan loan = Loan.builder()
-//                    .id(1L)
-//                    .member(testMember)
-//                    .book(testBook)
-//                    .loanDate(LocalDateTime.now())
-//                    .dueDate(LocalDateTime.now().plusDays(14))
-//                    .status(LoanStatus.ACTIVE)
-//                    .build();
-//
-//            // when
-//            String loanString = loan.toString();
-//
-//            // then
-//            assertThat(loanString).contains("ACTIVE");
-//        }
-//    }
+
+    @Nested
+    @DisplayName("대여 연장 테스트")
+    class ExtendLoanTest {
+
+        @Test
+        @DisplayName("정상 연장 - 반납예정일 연장")
+        void extendLoanSuccessfully() {
+            // given
+            LocalDateTime originalDueDate = LocalDateTime.now().plusDays(4);
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(originalDueDate)
+                    .build();
+
+            // when
+            loan.extendLoan(7);
+
+            // then
+            assertThat(loan.getDueDate()).isEqualTo(originalDueDate.plusDays(7));
+        }
+
+        @Test
+        @DisplayName("이미 반납된 대여 연장 시도 - 예외 발생")
+        void throwExceptionWhenExtendingReturnedLoan() {
+            // given
+            LocalDateTime originalDueDate = LocalDateTime.now().minusDays(4);
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(originalDueDate.plusDays(4))
+                    .returnDate(LocalDateTime.now().minusDays(1))
+                    .build();
+
+            // when & then
+            assertThatThrownBy(() -> loan.extendLoan(7))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("이미 반납된 대여는 연장할 수 없습니다");
+        }
+
+        @Test
+        @DisplayName("연체된 대여 연장 시도 - 예외 발생")
+        void throwExceptionWhenExtendingOverdueLoan() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(20))
+                    .dueDate(LocalDateTime.now().minusDays(5))
+                    .build();
+
+            // when & then
+            assertThatThrownBy(() -> loan.extendLoan(7))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("연체된 대여는 연장할 수 없습니다");
+        }
+
+        @Test
+        @DisplayName("14일 연장")
+        void extend14Days() {
+            // given
+            LocalDateTime originalDueDate = LocalDateTime.now().plusDays(4);
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(originalDueDate)
+                    .build();
+
+            // when
+            loan.extendLoan(14);
+
+            // then
+            assertThat(loan.getDueDate()).isEqualTo(originalDueDate.plusDays(14));
+        }
+    }
+
+    @Nested
+    @DisplayName("대여 취소 테스트")
+    class CancelTest {
+
+        @Test
+        @DisplayName("정상 취소 - 상태 변경")
+        void cancelLoanSuccessfully() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now())
+                    .dueDate(LocalDateTime.now().plusDays(14))
+                    .build();
+
+            // when
+            loan.cancelLoan();
+
+            // then
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.CANCELLED);
+            assertThat(loan.getReturnDate()).isNull();
+        }
+
+        @Test
+        @DisplayName("이미 반납된 대여 취소 시도 - 예외 발생")
+        void throwExceptionWhenCancellingReturnedLoan() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .returnDate(LocalDateTime.now())
+                    .build();
+
+            // when & then
+            assertThatThrownBy(() -> loan.cancelLoan())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("이미 반납된 대여는 취소할 수 없습니다");
+        }
+
+        @Test
+        @DisplayName("연체된 대여도 취소 가능")
+        void canCancelOverdueLoan() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(20))
+                    .dueDate(LocalDateTime.now().minusDays(5))
+                    .build();
+
+            // when
+            loan.cancelLoan();
+
+            // then
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.CANCELLED);
+        }
+    }
+
+    @Nested
+    @DisplayName("대여 상태 업데이트 테스트")
+    class UpdateStatusTest {
+
+        @Test
+        @DisplayName("정상 대여 - ACTIVE 상태 유지")
+        void updateToActiveWhenNormal() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .build();
+
+            // when
+            loan.updateStatus();
+
+            // then
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
+            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("연체 발생 - OVERDUE 상태로 변경 및 연체료 계산")
+        void updateToOverdueWhenPastDueDate() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(20))
+                    .dueDate(LocalDateTime.now().minusDays(5))
+                    .status(LoanStatus.ACTIVE)
+                    .build();
+
+            // when
+            loan.updateStatus();
+
+            // then
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.OVERDUE);
+            assertThat(loan.getOverdueFee()).isEqualByComparingTo(new BigDecimal("5000"));
+        }
+
+        @Test
+        @DisplayName("반납 완료 - RETURNED 상태로 변경")
+        void updateToReturnedWhenReturned() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .returnDate(LocalDateTime.now())
+                    .status(LoanStatus.ACTIVE)
+                    .build();
+
+            // when
+            loan.updateStatus();
+
+            // then
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
+            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("OVERDUE에서 ACTIVE로 상태 변경 안됨 (returnDate 있을 때)")
+        void notChangeFromOverdueToActive() {
+            // given
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now().minusDays(10))
+                    .dueDate(LocalDateTime.now().plusDays(4))
+                    .returnDate(LocalDateTime.now())
+                    .status(LoanStatus.OVERDUE)
+                    .overdueFee(new BigDecimal("5000"))
+                    .build();
+
+            // when
+            loan.updateStatus();
+
+            // then
+            assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
+        }
+    }
+
+    @Nested
+    @DisplayName("Audit 기능 테스트")
+    class AuditTest {
+
+        @Test
+        @DisplayName("생성 시간과 수정 시간 필드 존재 확인")
+        void auditFieldsExist() {
+            // given & when
+            Loan loan = Loan.builder()
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now())
+                    .dueDate(LocalDateTime.now().plusDays(14))
+                    .createdDate(LocalDateTime.now())
+                    .updatedDate(LocalDateTime.now())
+                    .build();
+
+            // then
+            assertThat(loan.getCreatedDate()).isNotNull();
+            assertThat(loan.getUpdatedDate()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("동등성 및 해시코드 테스트")
+    class EqualsAndHashCodeTest {
+
+        @Test
+        @DisplayName("같은 ID를 가진 Loan 객체는 동등함")
+        void loansWithSameIdShouldBeEqual() {
+            // given
+            LocalDateTime loanDate = LocalDateTime.now();
+            LocalDateTime dueDate = loanDate.plusDays(14);
+
+            Loan loan1 = Loan.builder()
+                    .id(1L)
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(loanDate)
+                    .dueDate(dueDate)
+                    .build();
+
+            Loan loan2 = Loan.builder()
+                    .id(1L)
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(loanDate)
+                    .dueDate(dueDate)
+                    .build();
+
+            // when & then
+            assertThat(loan1).isEqualTo(loan2);
+            assertThat(loan1.hashCode()).isEqualTo(loan2.hashCode());
+        }
+
+        @Test
+        @DisplayName("다른 ID를 가진 Loan 객체는 다름")
+        void loansWithDifferentIdShouldNotBeEqual() {
+            // given
+            LocalDateTime loanDate = LocalDateTime.now();
+            LocalDateTime dueDate = loanDate.plusDays(14);
+
+            Loan loan1 = Loan.builder()
+                    .id(1L)
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(loanDate)
+                    .dueDate(dueDate)
+                    .build();
+
+            Loan loan2 = Loan.builder()
+                    .id(2L)
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(loanDate)
+                    .dueDate(dueDate)
+                    .build();
+
+            // when & then
+            assertThat(loan1).isNotEqualTo(loan2);
+        }
+    }
+
+    @Nested
+    @DisplayName("toString 테스트")
+    class ToStringTest {
+
+        @Test
+        @DisplayName("toString 메서드가 주요 필드를 포함함")
+        void toStringShouldContainMainFields() {
+            // given
+            Loan loan = Loan.builder()
+                    .id(1L)
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now())
+                    .dueDate(LocalDateTime.now().plusDays(14))
+                    .status(LoanStatus.ACTIVE)
+                    .build();
+
+            // when
+            String loanString = loan.toString();
+
+            // then
+            assertThat(loanString).contains("ACTIVE");
+        }
+    }
     }
