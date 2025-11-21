@@ -20,15 +20,18 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("SELECT l FROM Loan l WHERE l.member.id = :memberId AND l.returnDate IS NULL")
     List<Loan> findByMemberIdAndReturnDateIsNull(@Param("memberId") Long memberId);
 
-    List<Loan> findByBookIdAndReturnDateIsNull();
+    @Query("SELECT l FROM Loan l WHERE l.book.id = :bookId AND l.returnDate IS NULL")
+    List<Loan> findByBookIdAndReturnDateIsNull(@Param("bookId") Long bookId);
 
     List<Loan> findOverdueLoans(LocalDateTime currentDate);
 
     List<Loan> findByReturnDateIsNull();
 
-    List<Loan> findByLoanDateBetween();
+    @Query("SELECT l FROM Loan l WHERE l.loanDate BETWEEN :startDate AND :endDate")
+    List<Loan> findByLoanDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    boolean existsByBookIdAndReturnDateIsNull();
+    @Query("SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END FROM Loan l WHERE l.book.id = :bookId AND l.returnDate IS NULL")
+    boolean existsByBookIdAndReturnDateIsNull(@Param("bookId") Long bookId);
 
     long countOverdueLoans();
 
