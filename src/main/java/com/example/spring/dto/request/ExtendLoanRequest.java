@@ -14,12 +14,8 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateLoanRequest {
-    private Member member;
+public class ExtendLoanRequest {
 
-    private Book book;
 
-    private LoanStatus status;
-
-    private BigDecimal overdueFee;
+    private Integer days = 14;
 }
