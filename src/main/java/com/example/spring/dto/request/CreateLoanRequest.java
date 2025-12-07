@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -18,11 +19,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CreateLoanRequest {
 
-    private Member member;
+    private Long memberId;
 
-    private Book book;
+    private Long bookId;
 
-    private LoanStatus status;
-
-    private BigDecimal overdueFee;
+    private LocalDateTime dueDate;
 }
