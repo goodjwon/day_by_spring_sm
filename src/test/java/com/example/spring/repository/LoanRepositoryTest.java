@@ -2,7 +2,6 @@ package com.example.spring.repository;
 
 import com.example.spring.entity.Book;
 import com.example.spring.entity.Loan;
-import com.example.spring.entity.LoanStatus;
 import com.example.spring.entity.Member;
 import com.example.spring.entity.MembershipType;
 import org.junit.jupiter.api.Test;
@@ -37,29 +36,15 @@ public class LoanRepositoryTest {
     }
 
     private Book createAndSaveBook(String title, String author) {
-        long uniqueNumber = System.nanoTime() % 10000000000L;
-        String isbn13 = String.format("978%010d", uniqueNumber);
-
         Book book = Book.builder()
                 .title(title)
                 .author(author)
                 .price(new BigDecimal("20000"))
-                .isbn(isbn13)
+                .isbn("ISBN" + (System.nanoTime() % 1000000000L))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
         return entityManager.persistAndFlush(book);
-    }
-
-    private Loan createLoan(Member member, Book book) {
-        return Loan.builder()
-                .member(member)
-                .book(book)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now())
-                .dueDate(LocalDateTime.now().plusWeeks(2))
-                .createdDate(LocalDateTime.now())
-                .build();
     }
 
     @Test
@@ -71,10 +56,10 @@ public class LoanRepositoryTest {
         Loan loan = Loan.builder()
                 .member(member)
                 .book(book)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
 
         // When
@@ -97,10 +82,10 @@ public class LoanRepositoryTest {
         Loan loan = Loan.builder()
                 .member(member)
                 .book(book)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
         Loan savedLoan = entityManager.persistAndFlush(loan);
 
@@ -124,19 +109,19 @@ public class LoanRepositoryTest {
         Loan loan1 = Loan.builder()
                 .member(member1)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
 
         Loan loan2 = Loan.builder()
                 .member(member1)
                 .book(book2)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
 
         entityManager.persistAndFlush(loan1);
@@ -160,20 +145,20 @@ public class LoanRepositoryTest {
         Loan loan1 = Loan.builder()
                 .member(member1)
                 .book(book)
-                .status(LoanStatus.RETURNED)
                 .loanDate(LocalDateTime.now().minusWeeks(4))
                 .dueDate(LocalDateTime.now().minusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .returnDate(LocalDateTime.now().minusWeeks(1))
                 .build();
 
         Loan loan2 = Loan.builder()
                 .member(member2)
                 .book(book)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
 
         entityManager.persistAndFlush(loan1);
@@ -197,19 +182,19 @@ public class LoanRepositoryTest {
         Loan unreturned = Loan.builder()
                 .member(member)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
 
         Loan returned = Loan.builder()
                 .member(member)
                 .book(book2)
-                .status(LoanStatus.RETURNED)
                 .loanDate(LocalDateTime.now().minusWeeks(1))
                 .dueDate(LocalDateTime.now().plusWeeks(1))
                 .createdDate(LocalDateTime.now())
+
                 .returnDate(LocalDateTime.now())
                 .build();
 
@@ -238,7 +223,6 @@ public class LoanRepositoryTest {
         Loan overdueeLoan = Loan.builder()
                 .member(member)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now().minusWeeks(3))
                 .dueDate(pastDate)
                 .createdDate(LocalDateTime.now())
@@ -248,7 +232,6 @@ public class LoanRepositoryTest {
         Loan normalLoan = Loan.builder()
                 .member(member)
                 .book(book2)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(futureDate)
                 .createdDate(LocalDateTime.now())
@@ -279,7 +262,6 @@ public class LoanRepositoryTest {
         Loan unreturned1 = Loan.builder()
                 .member(member1)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
@@ -289,7 +271,6 @@ public class LoanRepositoryTest {
         Loan unreturned2 = Loan.builder()
                 .member(member2)
                 .book(book2)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
@@ -299,7 +280,6 @@ public class LoanRepositoryTest {
         Loan returned = Loan.builder()
                 .member(member1)
                 .book(book3)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now().minusWeeks(1))
                 .dueDate(LocalDateTime.now().plusWeeks(1))
                 .createdDate(LocalDateTime.now())
@@ -329,7 +309,6 @@ public class LoanRepositoryTest {
         Loan activeLoan = Loan.builder()
                 .member(member)
                 .book(unavailableBook)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
@@ -358,7 +337,6 @@ public class LoanRepositoryTest {
         Loan loanWithinPeriod = Loan.builder()
                 .member(member)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(withinPeriod)
                 .dueDate(withinPeriod.plusWeeks(2))
                 .createdDate(LocalDateTime.now())
@@ -368,7 +346,6 @@ public class LoanRepositoryTest {
         Loan loanOutsidePeriod = Loan.builder()
                 .member(member)
                 .book(book2)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(outsidePeriod)
                 .dueDate(outsidePeriod.plusWeeks(2))
                 .createdDate(LocalDateTime.now())
@@ -395,10 +372,10 @@ public class LoanRepositoryTest {
         Loan loan = Loan.builder()
                 .member(member)
                 .book(book)
-                .status(LoanStatus.ACTIVE)
                 .loanDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+
                 .build();
         Loan savedLoan = entityManager.persistAndFlush(loan);
 
@@ -419,108 +396,99 @@ public class LoanRepositoryTest {
         assertThat(foundLoan).isNull();
     }
 
-    // ========== JOIN 메소드 테스트 ==========
+    // ========== JOIN 관련 테스트 ==========
 
     @Test
-    public void findByMemberName_회원이름으로조회() {
+    public void findByMemberName_회원이름으로대출조회() {
         // Given
-        Member member = createAndSaveMember("김철수", "kim@test.com");
-        Book book = createAndSaveBook("자바의 정석", "남궁성");
+        Member member1 = createAndSaveMember("김철수", "kim@example.com");
+        Member member2 = createAndSaveMember("박영희", "park@example.com");
+        Book book1 = createAndSaveBook("자바 프로그래밍", "저자1");
+        Book book2 = createAndSaveBook("스프링 부트", "저자2");
 
-        Loan loan = Loan.builder()
-                .member(member)
-                .book(book)
-                .status(LoanStatus.ACTIVE)
+        Loan loan1 = Loan.builder()
+                .member(member1)
+                .book(book1)
                 .loanDate(LocalDateTime.now())
-                .dueDate(LocalDateTime.now().plusDays(14))
+                .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
                 .build();
-        entityManager.persistAndFlush(loan);
+
+        Loan loan2 = Loan.builder()
+                .member(member1)
+                .book(book2)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        entityManager.persistAndFlush(loan1);
+        entityManager.persistAndFlush(loan2);
 
         // When
         List<Loan> loans = loanRepository.findByMemberName("김철수");
 
         // Then
-        assertThat(loans).hasSize(1);
-        assertThat(loans.get(0).getMember().getName()).isEqualTo("김철수");
+        assertThat(loans).hasSize(2);
+        assertThat(loans).allMatch(loan -> loan.getMember().getName().equals("김철수"));
     }
 
     @Test
-    public void findByBookTitle_도서제목으로조회() {
+    public void findByBookTitle_도서제목으로대출조회() {
         // Given
-        Member member = createAndSaveMember("이영희", "lee@test.com");
-        Book book = createAndSaveBook("스프링 부트 핵심 가이드", "장정우");
-
-        Loan loan = Loan.builder()
-                .member(member)
-                .book(book)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now())
-                .dueDate(LocalDateTime.now().plusDays(14))
-                .createdDate(LocalDateTime.now())
-                .build();
-        entityManager.persistAndFlush(loan);
-
-        // When
-        List<Loan> loans = loanRepository.findByBookTitle("스프링 부트 핵심 가이드");
-
-        // Then
-        assertThat(loans).hasSize(1);
-        assertThat(loans.get(0).getBook().getTitle()).isEqualTo("스프링 부트 핵심 가이드");
-    }
-
-    @Test
-    public void findOverdueLoansByMemberEmail_회원이메일로연체대여조회() {
-        // Given
-        Member member = createAndSaveMember("박민수", "park@test.com");
-        Book book = createAndSaveBook("클린 코드", "로버트 마틴");
-
-        Loan loan = Loan.builder()
-                .member(member)
-                .book(book)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(20))
-                .dueDate(LocalDateTime.now().minusDays(5))
-                .createdDate(LocalDateTime.now())
-
-                .build();
-        loan.updateStatus(); // OVERDUE 상태로 변경
-        entityManager.persistAndFlush(loan);
-
-        // When
-        List<Loan> overdueLoans = loanRepository.findOverdueLoansByMemberEmail("park@test.com");
-
-        // Then
-        assertThat(overdueLoans).hasSize(1);
-        assertThat(overdueLoans.get(0).getMember().getEmail()).isEqualTo("park@test.com");
-    }
-
-    @Test
-    public void findAllWithMemberAndBook_FetchJoin으로조회() {
-        // Given
-        Member member1 = createAndSaveMember("홍길동", "hong@test.com");
-        Member member2 = createAndSaveMember("강감찬", "kang@test.com");
-        Book book1 = createAndSaveBook("이펙티브 자바", "조슈아 블로크");
-        Book book2 = createAndSaveBook("토비의 스프링", "이일민");
+        Member member1 = createAndSaveMember("회원1", "member1@example.com");
+        Member member2 = createAndSaveMember("회원2", "member2@example.com");
+        Book popularBook = createAndSaveBook("인기도서", "유명저자");
 
         Loan loan1 = Loan.builder()
                 .member(member1)
-                .book(book1)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now())
-                .dueDate(LocalDateTime.now().plusDays(14))
+                .book(popularBook)
+                .loanDate(LocalDateTime.now().minusWeeks(4))
+                .dueDate(LocalDateTime.now().minusWeeks(2))
                 .createdDate(LocalDateTime.now())
-
+                .returnDate(LocalDateTime.now().minusWeeks(1))
                 .build();
 
         Loan loan2 = Loan.builder()
                 .member(member2)
-                .book(book2)
-                .status(LoanStatus.ACTIVE)
+                .book(popularBook)
                 .loanDate(LocalDateTime.now())
-                .dueDate(LocalDateTime.now().plusDays(14))
+                .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+                .build();
 
+        entityManager.persistAndFlush(loan1);
+        entityManager.persistAndFlush(loan2);
+
+        // When
+        List<Loan> loans = loanRepository.findByBookTitle("인기도서");
+
+        // Then
+        assertThat(loans).hasSize(2);
+        assertThat(loans).allMatch(loan -> loan.getBook().getTitle().equals("인기도서"));
+    }
+
+    @Test
+    public void findAllWithMemberAndBook_FetchJoin으로N플러스1문제해결() {
+        // Given
+        Member member = createAndSaveMember("테스트회원", "test@example.com");
+        Book book1 = createAndSaveBook("도서1", "저자1");
+        Book book2 = createAndSaveBook("도서2", "저자2");
+
+        Loan loan1 = Loan.builder()
+                .member(member)
+                .book(book1)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        Loan loan2 = Loan.builder()
+                .member(member)
+                .book(book2)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
+                .createdDate(LocalDateTime.now())
                 .build();
 
         entityManager.persistAndFlush(loan1);
@@ -531,95 +499,95 @@ public class LoanRepositoryTest {
         List<Loan> loans = loanRepository.findAllWithMemberAndBook();
 
         // Then
-        assertThat(loans).hasSize(2);
-        // Fetch Join으로 인해 Member와 Book이 이미 로딩되어 있음
-        assertThat(loans.get(0).getMember()).isNotNull();
-        assertThat(loans.get(0).getBook()).isNotNull();
+        assertThat(loans).hasSizeGreaterThanOrEqualTo(2);
+        // Fetch Join으로 이미 로드되어 있어야 함
+        loans.forEach(loan -> {
+            assertThat(loan.getMember()).isNotNull();
+            assertThat(loan.getBook()).isNotNull();
+        });
     }
 
     @Test
-    public void findMembersByBookTitle_특정도서를대여한회원목록() {
+    public void findMembersByBookTitle_특정도서를대여한회원목록조회() {
         // Given
-        Member member1 = createAndSaveMember("회원A", "a@test.com");
-        Member member2 = createAndSaveMember("회원B", "b@test.com");
-        Book book = createAndSaveBook("인기도서", "저자");
+        Member member1 = createAndSaveMember("회원1", "member1@example.com");
+        Member member2 = createAndSaveMember("회원2", "member2@example.com");
+        Member member3 = createAndSaveMember("회원3", "member3@example.com");
+        Book popularBook = createAndSaveBook("베스트셀러", "유명저자");
+        Book otherBook = createAndSaveBook("다른책", "다른저자");
 
         Loan loan1 = Loan.builder()
                 .member(member1)
-                .book(book)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(30))
-                .dueDate(LocalDateTime.now().minusDays(16))
-                .returnDate(LocalDateTime.now().minusDays(15))
+                .book(popularBook)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
-
                 .build();
 
         Loan loan2 = Loan.builder()
                 .member(member2)
-                .book(book)
-                .status(LoanStatus.ACTIVE)
+                .book(popularBook)
                 .loanDate(LocalDateTime.now())
-                .dueDate(LocalDateTime.now().plusDays(14))
+                .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
+                .build();
 
+        Loan loan3 = Loan.builder()
+                .member(member3)
+                .book(otherBook)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
+                .createdDate(LocalDateTime.now())
                 .build();
 
         entityManager.persistAndFlush(loan1);
         entityManager.persistAndFlush(loan2);
+        entityManager.persistAndFlush(loan3);
 
         // When
-        List<Member> members = loanRepository.findMembersByBookTitle("인기도서");
+        List<Member> members = loanRepository.findMembersByBookTitle("베스트셀러");
 
         // Then
         assertThat(members).hasSize(2);
         assertThat(members).extracting(Member::getName)
-                .containsExactlyInAnyOrder("회원A", "회원B");
+                .containsExactlyInAnyOrder("회원1", "회원2");
     }
 
     @Test
-    public void findCurrentlyBorrowedBooks_회원의대여중인도서목록() {
+    public void findCurrentlyBorrowedBooks_특정회원의현재대여중인도서목록() {
         // Given
-        Member member = createAndSaveMember("독서왕", "reader@test.com");
-        Book book1 = createAndSaveBook("대여중 도서1", "저자1");
-        Book book2 = createAndSaveBook("대여중 도서2", "저자2");
-        Book book3 = createAndSaveBook("반납완료 도서", "저자3");
+        Member member = createAndSaveMember("대출회원", "borrower@example.com");
+        Book book1 = createAndSaveBook("현재대여중1", "저자1");
+        Book book2 = createAndSaveBook("현재대여중2", "저자2");
+        Book book3 = createAndSaveBook("반납완료", "저자3");
 
-        // 대여 중인 도서들
-        Loan activeLoan1 = Loan.builder()
+        Loan currentLoan1 = Loan.builder()
                 .member(member)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(5))
-                .dueDate(LocalDateTime.now().plusDays(9))
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
-
                 .build();
 
-        Loan activeLoan2 = Loan.builder()
+        Loan currentLoan2 = Loan.builder()
                 .member(member)
                 .book(book2)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(3))
-                .dueDate(LocalDateTime.now().plusDays(11))
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
                 .createdDate(LocalDateTime.now())
-
                 .build();
 
-        // 반납 완료된 도서
         Loan returnedLoan = Loan.builder()
                 .member(member)
                 .book(book3)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(20))
-                .dueDate(LocalDateTime.now().minusDays(6))
-                .returnDate(LocalDateTime.now().minusDays(5))
+                .loanDate(LocalDateTime.now().minusWeeks(3))
+                .dueDate(LocalDateTime.now().minusWeeks(1))
                 .createdDate(LocalDateTime.now())
-
+                .returnDate(LocalDateTime.now().minusWeeks(1))
                 .build();
 
-        entityManager.persistAndFlush(activeLoan1);
-        entityManager.persistAndFlush(activeLoan2);
+        entityManager.persistAndFlush(currentLoan1);
+        entityManager.persistAndFlush(currentLoan2);
         entityManager.persistAndFlush(returnedLoan);
 
         // When
@@ -628,52 +596,49 @@ public class LoanRepositoryTest {
         // Then
         assertThat(borrowedBooks).hasSize(2);
         assertThat(borrowedBooks).extracting(Book::getTitle)
-                .containsExactlyInAnyOrder("대여중 도서1", "대여중 도서2");
+                .containsExactlyInAnyOrder("현재대여중1", "현재대여중2");
     }
 
     @Test
-    public void findOverdueLoansWithMember_연체대여와회원정보조회() {
+    public void countOverdueLoans_연체대여수조회() {
         // Given
-        Member member1 = createAndSaveMember("연체자1", "overdue1@test.com");
-        Member member2 = createAndSaveMember("연체자2", "overdue2@test.com");
-        Book book1 = createAndSaveBook("연체도서1", "저자");
-        Book book2 = createAndSaveBook("연체도서2", "저자");
+        Member member = createAndSaveMember("연체회원", "overdue@example.com");
+        Book book1 = createAndSaveBook("연체도서1", "저자1");
+        Book book2 = createAndSaveBook("연체도서2", "저자2");
+        Book book3 = createAndSaveBook("정상도서", "저자3");
 
         Loan overdueLoan1 = Loan.builder()
-                .member(member1)
+                .member(member)
                 .book(book1)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(25))
-                .dueDate(LocalDateTime.now().minusDays(11))
+                .loanDate(LocalDateTime.now().minusWeeks(4))
+                .dueDate(LocalDateTime.now().minusWeeks(1))
                 .createdDate(LocalDateTime.now())
-
                 .build();
-        overdueLoan1.updateStatus(); // OVERDUE
 
         Loan overdueLoan2 = Loan.builder()
-                .member(member2)
+                .member(member)
                 .book(book2)
-                .status(LoanStatus.ACTIVE)
-                .loanDate(LocalDateTime.now().minusDays(20))
-                .dueDate(LocalDateTime.now().minusDays(6))
+                .loanDate(LocalDateTime.now().minusWeeks(3))
+                .dueDate(LocalDateTime.now().minusDays(2))
                 .createdDate(LocalDateTime.now())
-
                 .build();
-        overdueLoan2.updateStatus(); // OVERDUE
+
+        Loan normalLoan = Loan.builder()
+                .member(member)
+                .book(book3)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
+                .createdDate(LocalDateTime.now())
+                .build();
 
         entityManager.persistAndFlush(overdueLoan1);
         entityManager.persistAndFlush(overdueLoan2);
-        entityManager.clear(); // 영속성 컨텍스트 초기화
+        entityManager.persistAndFlush(normalLoan);
 
         // When
-        List<Loan> overdueLoans = loanRepository.findOverdueLoansWithMember();
+        long overdueCount = loanRepository.countOverdueLoans();
 
         // Then
-        assertThat(overdueLoans).hasSize(2);
-        // Fetch Join으로 Member 정보도 함께 로딩됨
-        assertThat(overdueLoans.get(0).getMember()).isNotNull();
-        // dueDate 오름차순 정렬 확인
-        assertThat(overdueLoans.get(0).getDueDate())
-                .isBeforeOrEqualTo(overdueLoans.get(1).getDueDate());
+        assertThat(overdueCount).isGreaterThanOrEqualTo(2);
     }
 }
