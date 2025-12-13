@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
@@ -38,6 +37,9 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT COUNT(l) FROM Loan l WHERE l.returnDate IS NULL AND l.dueDate < CURRENT_TIMESTAMP")
     long countOverdueLoans();
+
+    //연체 여부 확인
+    //LoanStatus 별 검증
 
     // ========== JOIN 예제 메소드들 ==========
 
