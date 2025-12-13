@@ -1,12 +1,10 @@
 package com.example.spring.service;
 
 import com.example.spring.dto.request.CreateLoanRequest;
-import com.example.spring.dto.request.UpdateLoanRequest;
+import com.example.spring.dto.request.ExtendLoanRequest;
 import com.example.spring.dto.response.LoanResponse;
-import com.example.spring.entity.Book;
 import com.example.spring.entity.Loan;
 import com.example.spring.entity.LoanStatus;
-import com.example.spring.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,7 +27,7 @@ public interface LoanService {
     /**
      * 대여 정보 수정
      */
-    LoanResponse updateLoan(Long id, UpdateLoanRequest request);
+    LoanResponse updateLoan(Long id, ExtendLoanRequest request);
 
     /**
      * 대여 기록 삭제(Soft Delete)
@@ -46,6 +43,10 @@ public interface LoanService {
      * 상세보기
      */
     LoanResponse getLoanById(Loan id);
+
+    /**
+     * 전체 대여 조회
+     */
 
 
     //admin
@@ -86,6 +87,10 @@ public interface LoanService {
      * @return
      */
     Page<LoanResponse> getBookLoanHistory(Long bookId, Pageable pageable);
+
+    /**
+     *모든 대여 목록 조회
+     */
 
     /**
      * 관리자 반납 처리 (반납일 수동 지정 가능)
