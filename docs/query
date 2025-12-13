@@ -1,0 +1,12 @@
+SELECT * FROM
+    Loan l JOIN Member m ON l.memberId = m.memberId
+           JOIN Book b ON l.bookId = b.bookId;
+
+
+Loan 10 select 해오고..
+key 기준으로
+- select member
+- select book
+
+10 개면 양호. => 엑셀... 데어티 만들기 => 10,000 개. 10.개 i 10,000  회원조회, book 대해서도 10,000 조회.
+

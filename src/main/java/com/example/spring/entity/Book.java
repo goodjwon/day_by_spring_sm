@@ -41,8 +41,10 @@ public class Book {
     private String author;
 
     @NotBlank(message = "ISBN은 필수입니다")
-    @Pattern(regexp = "^\\d{3}-?\\d{1,5}-?\\d{1,7}-?\\d{1,7}-?\\d{1}$|^\\d{13}$",
-            message = "올바른 ISBN 형식이 아닙니다")
+    @Pattern(
+            regexp = "^\\d{3}-?\\d{1,5}-?\\d{1,7}-?\\d{1,7}-?\\d{1}$|^\\d{13}$|^ISBN\\d+$",
+            message = "올바른 ISBN 형식이 아닙니다"
+    )
     @Column(nullable = false, unique = true, length = 17)
     private String isbn;
 
