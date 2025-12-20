@@ -149,12 +149,12 @@ public class LoanServiceImplTest {
             given(memberRepository.findById(1L)).willReturn(Optional.of(testMember));
             given(bookRepository.findById(1L)).willReturn(Optional.of(testBook));
 
-            Loan overDueLoan = new Loan();
-            overDueLoan.setDueDate(LocalDateTime.now().minusDays(3));
-            overDueLoan.setStatus(LoanStatus.OVERDUE);
+//            Loan overDueLoan = new Loan();
+//            overDueLoan.setDueDate(LocalDateTime.now().minusDays(3));
+//            overDueLoan.setStatus(LoanStatus.OVERDUE);
 
             given(loanRepository.existsByMemberAndStatus(testMember, LoanStatus.OVERDUE))
-                    .willReturn(overDueLoan.isOverdue());
+                    .willReturn(true);
             //When
             //Then
             assertThatThrownBy(() -> loanService.createLoan(createLoanRequest))

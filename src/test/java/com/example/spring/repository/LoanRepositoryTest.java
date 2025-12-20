@@ -1,9 +1,7 @@
 package com.example.spring.repository;
 
-import com.example.spring.entity.Book;
-import com.example.spring.entity.Loan;
-import com.example.spring.entity.Member;
-import com.example.spring.entity.MembershipType;
+import com.example.spring.entity.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -640,5 +638,30 @@ public class LoanRepositoryTest {
 
         // Then
         assertThat(overdueCount).isGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("existsByMemberAndStatus: 특정 회원의 특정 대출 상태 존재 여부 확인")
+    void existsByMemberAndStatus() {
+        Member member = createAndSaveMember("강감찬", "kang@example.com");
+        Book book = createAndSaveBook("귀주대첩", "역사학자");
+
+        //Given
+        Loan loan = Loan.builder()
+                .member(member)
+                .book(book)
+                .loanDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusWeeks(2))
+                .status(LoanStatus.OVERDUE)
+                .createdDate(LocalDateTime.now())
+                .build();
+        entityManager.persistAndFlush(loan);
+
+        //When
+        boolean hasOverdue = loanRepository.existsByMemberAndStatus(member, LoanStatus.OVERDUE);
+        //Then
+        assertThat(hasOverdue).isTrue();
+
+
     }
 }
