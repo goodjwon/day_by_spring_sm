@@ -88,23 +88,23 @@ public class LoanServiceImpl implements LoanService {
 
         return LoanResponse.form(savedLoan);
     }
-
+    //todo 24일까지 메서드 작성, 테스트
     @Override
     public Page<LoanResponse> getAllLoansWithPagination(Pageable pageable, String searchQuery, String statusFilter) {
         //
         return null;
     }
-
+    //todo 24일까지 메서드 작성, 테스트
     @Override
     public Optional<LoanResponse> getLoanById(Long id) {
         return Optional.empty();
     }
-
+    //todo 24일까지 메서드 작성, 테스트
     @Override
     public LoanResponse updateLoan(Long loanId, UpdateLoanRequest request) {
         return null;
     }
-
+    //todo 24일까지 메서드 작성, 테스트
     @Override
     public void deleteLoan(Long loanId) {
 

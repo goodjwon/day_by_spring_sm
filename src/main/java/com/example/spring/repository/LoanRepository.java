@@ -102,8 +102,22 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("SELECT l FROM Loan l")
     Loan findLoanById(Long id);
 
-    @Query("SELECT l.book FROM Loan l " +
-            "WHERE l.member.id = :memberId " +
-            "AND l.status = :status")
-    boolean existsByMemberAndStatus(Member member, LoanStatus loanStatus);
+//    @Query("SELECT l FROM Loan l " +
+//            "WHERE l.member = :member " +
+//            "AND l.status = :status")
+//
+
+    @Query("SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END FROM Loan l " +
+            "WHERE l.member = :member AND l.status = :status")
+    boolean existsByMemberAndStatus(@Param("member") Member member, @Param("status") LoanStatus status);
+
+    /**
+
+     select count(*)
+     from loan
+     where member_id = ? and status = ?
+
+
+
+     */
 }
