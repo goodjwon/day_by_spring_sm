@@ -10,7 +10,6 @@ import com.example.spring.entity.Book;
 import com.example.spring.entity.Loan;
 import com.example.spring.entity.LoanStatus;
 import com.example.spring.entity.Member;
-import com.example.spring.exception.BookException;
 import com.example.spring.exception.EntityNotFoundException;
 import com.example.spring.exception.LoanException;
 import com.example.spring.repository.BookRepository;
@@ -19,9 +18,7 @@ import com.example.spring.repository.MemberRepository;
 import com.example.spring.service.LoanService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +64,9 @@ public class LoanServiceImpl implements LoanService {
         //회원에 현재 도서 대여수 확인
 
         //연체 여부 확인
-
+        if (loanRepository.existsByMemberAndStatus(member, LoanStatus.OVERDUE)) {
+            throw new LoanException.OverdueLoansExistException(request.getMemberId());
+        }
 
         // 대여 생성
         LocalDateTime now = LocalDateTime.now();
@@ -92,6 +91,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public Page<LoanResponse> getAllLoansWithPagination(Pageable pageable, String searchQuery, String statusFilter) {
+        //
         return null;
     }
 

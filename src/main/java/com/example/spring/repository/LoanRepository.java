@@ -94,16 +94,16 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
             "JOIN FETCH l.member m " +
             "WHERE l.status = :status " +
             "ORDER BY l.dueDate ASC")
-    List<Loan> findOverdueLoansWithMember(@Param("status") LoanStatus status);
+    boolean findOverdueLoansWithMember(@Param("status") LoanStatus status);
 
     // ========== Default 메소드 ==========
 
     // 편의 메서드 - 현재 시간 기준 연체 대여 조회
-    default List<Loan> findOverdueLoans() {
-        return findOverdueLoans(LocalDateTime.now());
-    }
+    @Query("SELECT l FROM Loan l")
+    Loan findLoanById(Long id);
 
-    default Loan findLoanById(Long id) {
-        return findById(id).orElse(null);
-    }
+    @Query("SELECT l.book FROM Loan l " +
+            "WHERE l.member.id = :memberId " +
+            "AND l.status = :status")
+    boolean existsByMemberAndStatus(Member member, LoanStatus loanStatus);
 }
