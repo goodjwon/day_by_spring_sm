@@ -91,23 +91,42 @@ public class LoanServiceImpl implements LoanService {
     //todo 24일까지 메서드 작성, 테스트
     @Override
     public Page<LoanResponse> getAllLoansWithPagination(Pageable pageable, String searchQuery, String statusFilter) {
-        //
-        return null;
+        log.info("대여 목록 페이징 조회 - 페이지: {}", pageable.getPageNumber());
+        return loanRepository.findAll(pageable).map(LoanResponse::form);
     }
     //todo 24일까지 메서드 작성, 테스트
     @Override
     public Optional<LoanResponse> getLoanById(Long id) {
-        return Optional.empty();
+        log.info("대여 조회 요청 - ID: {}", id);
+        return loanRepository.findById(id).map(LoanResponse::form);
     }
     //todo 24일까지 메서드 작성, 테스트
     @Override
     public LoanResponse updateLoan(Long loanId, UpdateLoanRequest request) {
-        return null;
+        log.info("대여 정보 수정 요청 - ID: {}", loanId);
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("대여 정보를 찾을 수 없습니다"));
+
+        if (request.getDueDate() != null) {
+            loan.setDueDate(request.getDueDate());
+        }
+        if (request.getStatus() != null) {
+            loan.setStatus(request.getStatus());
+        }
+        log.info("대여 정보 수정 완료 - ID: {}", loanId);
+        return LoanResponse.form(loan);
     }
     //todo 24일까지 메서드 작성, 테스트
     @Override
     public void deleteLoan(Long loanId) {
-
+        log.info("대여 삭제 요청 - ID: {}", loanId);
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("대여 정보를 찾을 수 없습니다"));
+        if (loan.getReturnDate() == null) {
+            loan.getBook().setAvailable(true);
+        }
+        loanRepository.delete(loan);
+        log.info("대여 삭제 완료 - ID: {}", loanId);
     }
 
     @Override
