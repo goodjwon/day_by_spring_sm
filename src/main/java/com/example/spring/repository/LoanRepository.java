@@ -5,13 +5,14 @@ import com.example.spring.entity.Loan;
 import com.example.spring.entity.LoanStatus;
 import com.example.spring.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface LoanRepository extends JpaRepository<Loan, Long> {
+public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
 
     @Query("SELECT l FROM Loan l WHERE l.member.id = :memberId ORDER BY l.loanDate DESC")
     List<Loan> findByMemberId(@Param("memberId") Long memberId);
