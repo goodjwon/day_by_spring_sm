@@ -1,6 +1,7 @@
 package com.example.spring.service;
 
 import com.example.spring.dto.request.CreateLoanRequest;
+import com.example.spring.dto.request.ExtendLoanRequest;
 import com.example.spring.dto.request.UpdateLoanRequest;
 import com.example.spring.dto.response.LoanResponse;
 import com.example.spring.entity.*;
@@ -192,136 +193,220 @@ public class LoanServiceImplTest {
             assertThat(response.getId()).isEqualTo(1L);
             assertThat(testBook.getAvailable()).isFalse();
         }
+
+        @Test
+        @DisplayName("대여 목록 페이징 조회")
+        void getAllLoansWithPagination() {
+            //Given
+            Pageable pageable = PageRequest.of(0,10);
+            Page<Loan> page = new PageImpl<>(List.of(testLoan));
+            given(loanRepository.findAll(any(Pageable.class))).willReturn(page);
+
+            //When
+            Page<LoanResponse> result = loanService.getAllLoansWithPagination(pageable, null, null);
+
+            //Then
+            assertThat(result).isNotEmpty();
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).getBook().getTitle()).isEqualTo(testBook.getTitle());
+        }
+
+        @Test
+        @DisplayName("대여 조회 - 성공")
+        void getLoanById_대여조회_성공() {
+            //Given
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            //When
+            Optional<LoanResponse> result = loanService.getLoanById(1L);
+
+            //Then
+            assertThat(result).isPresent();
+            assertThat(result.get().getMember().getName()).isEqualTo("홍길동");
+        }
+
+        @Test
+        @DisplayName("대여 조회 - 실패")
+        void getLoanById_대여조회_실패() {
+            //Given
+            given(loanRepository.findById(100L)).willReturn(Optional.empty());
+
+            //When
+            Optional<LoanResponse> result = loanService.getLoanById(100L);
+
+            //Then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("대여 정보 수정 - 성공")
+        void updateLoan_조회_성공() {
+            //Given
+            LocalDateTime returnDay = LocalDateTime.now().plusDays(7);
+            UpdateLoanRequest savedLoan = UpdateLoanRequest.builder()
+                    .dueDate(returnDay)
+                    .status(LoanStatus.RETURNED)
+                    .build();
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            //When
+            LoanResponse response = loanService.updateLoan(testLoan.getId(), savedLoan);
+
+            //Then
+            assertThat(response.getDueDate()).isEqualTo(returnDay);
+            assertThat(response.getStatus()).isEqualTo(LoanStatus.RETURNED);
+        }
+
+        @Test
+        @DisplayName("대여 정보 수정 - 정보 조회 실패")
+        void updateLoan_대여정보조회_실패() {
+            //Given
+            UpdateLoanRequest savedLoan = UpdateLoanRequest.builder().build();
+            given(loanRepository.findById(any())).willReturn(Optional.empty());
+
+            //When
+            //Then
+            assertThatThrownBy(() -> loanService.updateLoan(1L, savedLoan))
+                    .isInstanceOf(EntityNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("대여 삭제(Soft Delete) - 성공")
+        void deleteLoan_미반납도서_삭제성공() {
+            //Given
+            testBook.setAvailable(false);
+            Loan ativeLoan = Loan.builder()
+                    .id(1L)
+                    .member(testMember)
+                    .book(testBook)
+                    .loanDate(LocalDateTime.now())
+                    .returnDate(null)
+                    .build();
+            given(loanRepository.findById(1L)).willReturn(Optional.of(ativeLoan));
+
+            //When
+            loanService.deleteLoan(1L);
+
+            //Then
+            verify(loanRepository).delete(ativeLoan);
+            assertThat(testBook.getAvailable()).isTrue();
+        }
+
+        @Test
+        @DisplayName("대여 삭제(Soft Delete) - 성공")
+        void deleteLoan_반납된도서_삭제성공() {
+            // Given
+            testBook.setAvailable(true);
+            Loan returnedLoan = Loan.builder()
+                    .id(1L)
+                    .member(testMember)
+                    .book(testBook)
+                    .returnDate(LocalDateTime.now())
+                    .build();
+            given(loanRepository.findById(1L)).willReturn(Optional.of(returnedLoan));
+
+            // When
+            loanService.deleteLoan(1L);
+
+            // Then
+            verify(loanRepository).delete(returnedLoan);
+            assertThat(testBook.getAvailable()).isTrue();
+        }
+
+        @Test
+        @DisplayName("대여 삭제(Soft Delete) - 대여 조회 실패")
+        void deleteLoan_대여삭제_실패() {
+            //Given
+            given(loanRepository.findById(any())).willReturn(Optional.empty());
+
+            //When
+            //Then
+            assertThatThrownBy(() -> loanService.deleteLoan(1L))
+                    .isInstanceOf(EntityNotFoundException.class);
+        }
     }
 
-    @Test
-    @DisplayName("대여 목록 페이징 조회")
-    void getAllLoansWithPagination() {
-        //Given
-        Pageable pageable = PageRequest.of(0,10);
-        Page<Loan> page = new PageImpl<>(List.of(testLoan));
-        given(loanRepository.findAll(any(Pageable.class))).willReturn(page);
 
-        //When
-        Page<LoanResponse> result = loanService.getAllLoansWithPagination(pageable, null, null);
+    @Nested
+    @DisplayName("도서 반납")
+    class ReturnBookTest {
 
-        //Then
-        assertThat(result).isNotEmpty();
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getBook().getTitle()).isEqualTo(testBook.getTitle());
+        @Test
+        @DisplayName("정상적인 도서 반납")
+        void returnBook_정상반납_성공() {
+            // Given
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+            given(loanRepository.save(any(Loan.class))).willReturn(testLoan);
+            given(bookRepository.save(any(Book.class))).willReturn(testBook);
+
+            // When
+            LoanResponse result = loanService.returnBook(1L);
+
+            // Then
+            assertThat(result).isNotNull();
+            verify(loanRepository).save(any(Loan.class));
+            verify(bookRepository).save(any(Book.class));
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 대여 - 예외 발생")
+        void returnBook_존재하지않는대여_예외발생() {
+            // Given
+            given(loanRepository.findById(1L)).willReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> loanService.returnBook(1L))
+                    .isInstanceOf(LoanException.LoanNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("이미 반납된 대여 - 예외 발생")
+        void returnBook_이미반납됨_예외발생() {
+            // Given
+            testLoan.setReturnDate(LocalDateTime.now());
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            // When & Then
+            assertThatThrownBy(() -> loanService.returnBook(1L))
+                    .isInstanceOf(LoanException.AlreadyReturnedException.class);
+        }
     }
 
-    @Test
-    @DisplayName("대여 조회 - 성공")
-    void getLoanById_대여조회_성공() {
-        //Given
-        given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+    @Nested
+    @DisplayName("대여 연장")
+    class ExtendLoanTest {
 
-        //When
-        Optional<LoanResponse> result = loanService.getLoanById(1L);
+        @Test
+        @DisplayName("정상적인 대여 연장")
+        void extendLoan_정상연장_성공() {
+            // Given
+            ExtendLoanRequest request = ExtendLoanRequest.builder()
+                    .days(7)
+                    .build();
 
-        //Then
-        assertThat(result).isPresent();
-        assertThat(result.get().getMember().getName()).isEqualTo("홍길동");
-    }
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+            given(loanRepository.save(any(Loan.class))).willReturn(testLoan);
 
-    @Test
-    @DisplayName("대여 조회 - 실패")
-    void getLoanById_대여조회_실패() {
-        //Given
-        given(loanRepository.findById(100L)).willReturn(Optional.empty());
+            // When
+            LoanResponse result = loanService.extendLoan(1L, request);
 
-        //When
-        Optional<LoanResponse> result = loanService.getLoanById(100L);
+            // Then
+            assertThat(result).isNotNull();
+            verify(loanRepository).save(any(Loan.class));
+        }
 
-        //Then
-        assertThat(result).isEmpty();
-    }
+        @Test
+        @DisplayName("존재하지 않는 대여 - 예외 발생")
+        void extendLoan_존재하지않는대여_예외발생() {
+            // Given
+            ExtendLoanRequest request = ExtendLoanRequest.builder()
+                    .days(7)
+                    .build();
+            given(loanRepository.findById(1L)).willReturn(Optional.empty());
 
-    @Test
-    @DisplayName("대여 정보 수정 - 성공")
-    void updateLoan_조회_성공() {
-        //Given
-        LocalDateTime returnDay = LocalDateTime.now().plusDays(7);
-        UpdateLoanRequest savedLoan = UpdateLoanRequest.builder()
-                .dueDate(returnDay)
-                .status(LoanStatus.RETURNED)
-                .build();
-        given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
-
-        //When
-        LoanResponse response = loanService.updateLoan(testLoan.getId(), savedLoan);
-
-        //Then
-        assertThat(response.getDueDate()).isEqualTo(returnDay);
-        assertThat(response.getStatus()).isEqualTo(LoanStatus.RETURNED);
-    }
-
-    @Test
-    @DisplayName("대여 정보 수정 - 정보 조회 실패")
-    void updateLoan_대여정보조회_실패() {
-        //Given
-        UpdateLoanRequest savedLoan = UpdateLoanRequest.builder().build();
-        given(loanRepository.findById(any())).willReturn(Optional.empty());
-
-        //When
-        //Then
-        assertThatThrownBy(() -> loanService.updateLoan(1L, savedLoan))
-                .isInstanceOf(EntityNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("대여 삭제(Soft Delete) - 성공")
-    void deleteLoan_미반납도서_삭제성공() {
-        //Given
-        testBook.setAvailable(false);
-        Loan ativeLoan = Loan.builder()
-                .id(1L)
-                .member(testMember)
-                .book(testBook)
-                .loanDate(LocalDateTime.now())
-                .returnDate(null)
-                .build();
-        given(loanRepository.findById(1L)).willReturn(Optional.of(ativeLoan));
-
-        //When
-        loanService.deleteLoan(1L);
-
-        //Then
-        verify(loanRepository).delete(ativeLoan);
-        assertThat(testBook.getAvailable()).isTrue();
-    }
-
-    @Test
-    @DisplayName("대여 삭제(Soft Delete) - 성공")
-    void deleteLoan_반납된도서_삭제성공() {
-        // Given
-        testBook.setAvailable(true);
-        Loan returnedLoan = Loan.builder()
-                .id(1L)
-                .member(testMember)
-                .book(testBook)
-                .returnDate(LocalDateTime.now())
-                .build();
-        given(loanRepository.findById(1L)).willReturn(Optional.of(returnedLoan));
-
-        // When
-        loanService.deleteLoan(1L);
-
-        // Then
-        verify(loanRepository).delete(returnedLoan);
-        assertThat(testBook.getAvailable()).isTrue();
-    }
-
-    @Test
-    @DisplayName("대여 삭제(Soft Delete) - 대여 조회 실패")
-    void deleteLoan_대여삭제_실패() {
-        //Given
-        given(loanRepository.findById(any())).willReturn(Optional.empty());
-
-        //When
-        //Then
-        assertThatThrownBy(() -> loanService.deleteLoan(1L))
-                .isInstanceOf(EntityNotFoundException.class);
+            // When & Then
+            assertThatThrownBy(() -> loanService.extendLoan(1L, request))
+                    .isInstanceOf(LoanException.LoanNotFoundException.class);
+        }
     }
 }
