@@ -43,7 +43,7 @@ public class LoanController {
      * [API 명세 #5] 대출 기록 삭제
      * DELETE /api/admin/loans/{id}
      */
-    // @DeleteMapping("/api/admin/loans/{id}")
+//     @DeleteMapping("/api/admin/loans/{id}")
 
     /**
      * [API 명세 #6] 회원 대출 목록 조회 (페이징, 검색, 필터링, 정렬)

@@ -23,6 +23,7 @@ public class LoanResponse {
     private LoanStatus status;
     private BigDecimal overdueFee;
     private LocalDateTime dueDate;
+    private LocalDateTime returnDate;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
@@ -37,6 +38,7 @@ public class LoanResponse {
                 .status(loan.getStatus())
                 .overdueFee(loan.getOverdueFee())
                 .dueDate(loan.getDueDate())
+                .returnDate(loan.getReturnDate())
                 .createdDate(loan.getCreatedDate())
                 .updatedDate(loan.getUpdatedDate())
                 .build();
