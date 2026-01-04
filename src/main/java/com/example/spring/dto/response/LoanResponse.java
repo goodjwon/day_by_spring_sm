@@ -18,11 +18,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LoanResponse {
     private Long id;
-    private Member member;
-    private Book book;
+    private Long memberId;
+    private String memberName;
+    private String memberEmail;
+    private Long bookId;
+    private String bookTitle;
+    private String bookAuthor;
+    private String bookIsbn;
+    private LocalDateTime loanDate;
+    private LocalDateTime dueDate;
+    private LocalDateTime returnDate;
     private LoanStatus status;
     private BigDecimal overdueFee;
-    private LocalDateTime dueDate;
+    private Boolean isOverdue;
+    private Long overdueDays;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
@@ -32,11 +41,20 @@ public class LoanResponse {
     public static LoanResponse form(Loan loan) {
         return LoanResponse.builder()
                 .id(loan.getId())
-                .member(loan.getMember())
-                .book(loan.getBook())
+                .memberId(loan.getMember().getId())
+                .memberName(loan.getMember().getName())
+                .memberEmail(loan.getMember().getEmail())
+                .bookId(loan.getBook().getId())
+                .bookTitle(loan.getBook().getTitle())
+                .bookAuthor(loan.getBook().getAuthor())
+                .bookIsbn(loan.getBook().getIsbn())
+                .loanDate(loan.getLoanDate())
+                .dueDate(loan.getDueDate())
+                .returnDate(loan.getReturnDate())
                 .status(loan.getStatus())
                 .overdueFee(loan.getOverdueFee())
-                .dueDate(loan.getDueDate())
+                .isOverdue(loan.isOverdue())
+                .overdueDays(loan.getOverdueDays())
                 .createdDate(loan.getCreatedDate())
                 .updatedDate(loan.getUpdatedDate())
                 .build();
