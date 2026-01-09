@@ -184,7 +184,7 @@ public class LoanServiceImplTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getBook().getTitle()).isEqualTo("Clean Code");
+            assertThat(result.getContent().get(0).getBookTitle()).isEqualTo("Clean Code");
             verify(loanRepository).findAll(any(Specification.class), eq(pageable));
         }
 
@@ -205,7 +205,7 @@ public class LoanServiceImplTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getMember().getName()).isEqualTo("홍길동");
+            assertThat(result.getContent().get(0).getMemberName()).isEqualTo("홍길동");
             verify(loanRepository).findAll(any(Specification.class), eq(pageable));
         }
 
@@ -226,7 +226,7 @@ public class LoanServiceImplTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getMember().getEmail()).isEqualTo("hong@example.com");
+            assertThat(result.getContent().get(0).getMemberEmail()).isEqualTo("hong@example.com");
             verify(loanRepository).findAll(any(Specification.class), eq(pageable));
         }
 
@@ -330,7 +330,7 @@ public class LoanServiceImplTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getMember().getName()).isEqualTo("홍길동");
+            assertThat(result.getContent().get(0).getMemberName()).isEqualTo("홍길동");
             assertThat(result.getContent().get(0).getStatus()).isEqualTo(LoanStatus.ACTIVE);
             verify(loanRepository).findAll(any(Specification.class), eq(pageable));
         }
@@ -482,17 +482,6 @@ public class LoanServiceImplTest {
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
     @Nested
     @DisplayName("대여 생성")
     class createLoanTest {
@@ -596,7 +585,7 @@ public class LoanServiceImplTest {
 
             //Then
             assertThat(result).isPresent();
-            assertThat(result.get().getMember().getName()).isEqualTo("홍길동");
+            assertThat(result.get().getMemberName()).isEqualTo("홍길동");
         }
 
         @Test
@@ -620,11 +609,13 @@ public class LoanServiceImplTest {
                     .status(LoanStatus.RETURNED)
                     .build();
             given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+            given(loanRepository.save(any(Loan.class))).willReturn(testLoan);
             //When
             LoanResponse updatedLoan = loanService.updateLoan(testLoan.getId(), savedLoan);
             //Then
             assertThat(updatedLoan).isNotNull();
             assertThat(updatedLoan.getStatus()).isEqualTo(LoanStatus.RETURNED);
+            verify(loanRepository).save(any(Loan.class));
         }
 
         @Test
@@ -636,11 +627,13 @@ public class LoanServiceImplTest {
                     .dueDate(returnDay)
                     .build();
             given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+            given(loanRepository.save(any(Loan.class))).willReturn(testLoan);
             //When
             LoanResponse updatedLoan = loanService.updateLoan(testLoan.getId(), savedLoan);
             //Then
             assertThat(updatedLoan).isNotNull();
             assertThat(updatedLoan.getDueDate()).isEqualTo(returnDay);
+            verify(loanRepository).save(any(Loan.class));
         }
 
         @Test
@@ -653,7 +646,7 @@ public class LoanServiceImplTest {
             //When
             //Then
             assertThatThrownBy(() -> loanService.updateLoan(1L, savedLoan))
-                    .isInstanceOf(EntityNotFoundException.class);
+                    .isInstanceOf(LoanException.LoanNotFoundException.class);
         }
 
         @Test
@@ -791,6 +784,288 @@ public class LoanServiceImplTest {
             // When & Then
             assertThatThrownBy(() -> loanService.extendLoan(1L, request))
                     .isInstanceOf(LoanException.LoanNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("대여 취소")
+    class CancelLoanTest {
+
+        @Test
+        @DisplayName("대여 취소 - 성공")
+        void cancelLoan_성공() {
+            // Given
+            testBook.setAvailable(false);
+            testLoan.setReturnDate(null);
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            // When
+            loanService.cancelLoan(1L);
+
+            // Then
+            assertThat(testBook.getAvailable()).isTrue();
+            assertThat(testLoan.getStatus()).isEqualTo(LoanStatus.CANCELLED);
+        }
+
+        @Test
+        @DisplayName("이미 반납된 대여는 취소 불가")
+        void cancelLoan_이미반납됨_예외발생() {
+            // Given
+            testLoan.setReturnDate(LocalDateTime.now());
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            // When & Then
+            assertThatThrownBy(() -> loanService.cancelLoan(1L))
+                    .isInstanceOf(LoanException.AlreadyReturnedException.class);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 대여 취소 시도")
+        void cancelLoan_존재하지않음_예외발생() {
+            // Given
+            given(loanRepository.findById(any())).willReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> loanService.cancelLoan(1L))
+                    .isInstanceOf(LoanException.LoanNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("연체료 계산")
+    class OverdueFeeTest {
+
+        @Test
+        @DisplayName("연체료 발생 (연체됨)")
+        void getOverdueFee_연체료발생() {
+            // Given
+            testLoan.setDueDate(LocalDateTime.now().minusDays(3));
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            // When
+            BigDecimal fee = loanService.getOverdueFee(1L);
+
+            // Then
+            assertThat(fee).isEqualByComparingTo(new BigDecimal("1500"));
+        }
+
+        @Test
+        @DisplayName("연체료 없음 (기한 내)")
+        void getOverdueFee_연체료없음() {
+            // Given
+            testLoan.setDueDate(LocalDateTime.now().plusDays(3));
+            given(loanRepository.findById(1L)).willReturn(Optional.of(testLoan));
+
+            // When
+            BigDecimal fee = loanService.getOverdueFee(1L);
+
+            // Then
+            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 직접 반납")
+    class ReturnBookByMemberTest {
+
+        @Test
+        @DisplayName("본인의 대여 기록 반납 성공")
+        void returnBookByMember_성공() {
+            // Given
+            given(loanRepository.findLoanById(1L)).willReturn(testLoan);
+            given(loanRepository.save(any(Loan.class))).willReturn(testLoan);
+
+            // When
+            LoanResponse response = loanService.returnBookByMember(1L, 1L);
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(testLoan.getReturnDate()).isNotNull();
+            assertThat(testBook.getAvailable()).isTrue();
+        }
+
+        @Test
+        @DisplayName("타인의 대여 기록 반납 시도 - 권한 없음")
+        void returnBookByMember_권한없음_예외발생() {
+            // Given
+            given(loanRepository.findLoanById(1L)).willReturn(testLoan);
+
+            // When & Then
+            Long otherMemberId = 999L;
+            assertThatThrownBy(() -> loanService.returnBookByMember(1L, otherMemberId))
+                    .isInstanceOf(LoanException.UnauthorizedAccessException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("나의 대출 목록 조회")
+    class GetMyLoansTest {
+
+        @Test
+        @DisplayName("회원의 대출 목록 조회 성공")
+        void getMyLoans_성공() {
+            // Given
+            given(memberRepository.findById(1L)).willReturn(Optional.of(testMember));
+            given(loanRepository.findAll(any(Specification.class)))
+                    .willReturn(List.of(testLoan));
+
+            // When
+            List<LoanResponse> results = loanService.getMyLoans(1L, "ACTIVE");
+
+            // Then
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getMemberName()).isEqualTo("홍길동");
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 회원 예외")
+        void getMyLoans_회원없음_예외발생() {
+            // Given
+            given(memberRepository.findById(1L)).willReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> loanService.getMyLoans(1L, null))
+                    .isInstanceOf(EntityNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("대여 가능 여부 확인")
+    class ValidationTest {
+
+        @Test
+        @DisplayName("대여 가능 (최대 권수 미만)")
+        void canMemberLoan_가능() {
+            // Given
+            given(memberRepository.findMemberById(1L)).willReturn(testMember);
+            given(loanRepository.findByMemberIdAndReturnDateIsNull(1L))
+                    .willReturn(List.of(testLoan, testLoan, testLoan));
+
+            // When
+            boolean result = loanService.canMemberLoan(1L);
+
+            // Then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("대여 불가능 (최대 권수 초과)")
+        void canMemberLoan_불가능() {
+            // Given
+            given(memberRepository.findMemberById(1L)).willReturn(testMember);
+            given(loanRepository.findByMemberIdAndReturnDateIsNull(1L))
+                    .willReturn(List.of(testLoan, testLoan, testLoan, testLoan, testLoan));
+
+            // When
+            boolean result = loanService.canMemberLoan(1L);
+
+            // Then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("도서 대여 가능 여부 확인 - 가능")
+        void isBookAvailableForLoan_가능() {
+            // Given
+            testBook.setAvailable(true);
+            given(bookRepository.findById(1L)).willReturn(Optional.of(testBook));
+
+            // When
+            boolean result = loanService.isBookAvailableForLoan(1L);
+
+            // Then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("도서 대여 가능 여부 확인 - 불가능")
+        void isBookAvailableForLoan_불가능() {
+            // Given
+            testBook.setAvailable(false);
+            given(bookRepository.findById(1L)).willReturn(Optional.of(testBook));
+
+            // When
+            boolean result = loanService.isBookAvailableForLoan(1L);
+
+            // Then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 도서 확인 시 예외")
+        void isBookAvailableForLoan_도서없음() {
+            // Given
+            given(bookRepository.findById(any())).willReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> loanService.isBookAvailableForLoan(1L))
+                    .isInstanceOf(EntityNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("특수 조회 기능")
+    class SpecialSearchTest {
+
+        @Test
+        @DisplayName("연체된 대여 목록 조회")
+        void getOverdueLoans_성공() {
+            // Given
+            Loan overdueLoan = Loan.builder()
+                    .id(2L)
+                    .book(testBook)
+                    .member(testMember)
+                    .dueDate(LocalDateTime.now().minusDays(1))
+                    .build();
+            given(loanRepository.findOverdueLoans(any(LocalDateTime.class)))
+                    .willReturn(List.of(overdueLoan));
+
+            // When
+            List<LoanResponse> results = loanService.getOverdueLoans();
+
+            // Then
+            assertThat(results).isNotEmpty();
+            verify(loanRepository).findOverdueLoans(any(LocalDateTime.class));
+        }
+
+        @Test
+        @DisplayName("날짜 범위로 대여 조회")
+        void getLoansByDateRange_성공() {
+            // Given
+            LocalDateTime start = LocalDateTime.now().minusDays(7);
+            LocalDateTime end = LocalDateTime.now();
+            given(loanRepository.findByLoanDateBetween(start, end))
+                    .willReturn(List.of(testLoan));
+
+            // When
+            List<LoanResponse> results = loanService.getLoansByDateRange(start, end);
+
+            // Then
+            assertThat(results).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("회원 ID로 활성 대여 조회 - 성공")
+        void getActiveLoansByMemberId_성공() {
+            // Given
+            given(loanRepository.findByMemberIdAndReturnDateIsNull(1L))
+                    .willReturn(List.of(testLoan));
+
+            // When
+            List<LoanResponse> results = loanService.getActiveLoansByMemberId(1L);
+
+            // Then
+            assertThat(results).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("회원 ID로 활성 대여 조회 - 회원 없음")
+        void getActiveLoansByMemberId_회원없음() {
+            // Given
+            // getActiveLoansByMemberId 구현에서 memberId null 체크가 있다면 해당 로직 테스트
+            // 여기서는 서비스 구현상 memberId가 null이면 예외를 던지는 로직을 테스트
+            assertThatThrownBy(() -> loanService.getActiveLoansByMemberId(null))
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 }

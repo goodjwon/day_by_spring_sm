@@ -95,7 +95,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificat
             "JOIN FETCH l.member m " +
             "WHERE l.status = :status " +
             "ORDER BY l.dueDate ASC")
-    boolean findOverdueLoansWithMember(@Param("status") LoanStatus status);
+    List<Loan> findOverdueLoansWithMember(@Param("status") LoanStatus status);
 
     // ========== Default 메소드 ==========
 
