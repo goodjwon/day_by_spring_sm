@@ -1,10 +1,6 @@
 package com.example.spring.dto.request;
 
 import com.example.spring.entity.LoanStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,17 +8,25 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * 대출 수정 요청 DTO
+ * API 명세 #4: PATCH /api/admin/loans/{id}
+ *
+ * status 또는 dueDate 중 하나를 수정할 수 있습니다.
+ */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateLoanRequest {
-    @NotNull(message = "반납예정일은 필수입니다")
-    @Column(name = "due_date", nullable = false)
-    private LocalDateTime dueDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    @Builder.Default
-    private LoanStatus status = LoanStatus.ACTIVE;
+    /**
+     * 대출 상태 (RETURNED로 변경 시 반납 처리)
+     */
+    private LoanStatus status;
+
+    /**
+     * 반납 예정일 (연장 시 사용)
+     */
+    private LocalDateTime dueDate;
 }

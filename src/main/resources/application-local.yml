@@ -1,0 +1,31 @@
+# ========================================
+# Local 환경 설정 (기본 프로파일)
+# ========================================
+
+spring:
+  # H2 인메모리 데이터베이스
+  datasource:
+    url: jdbc:h2:mem:localdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  # H2 Console 활성화
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+# 로깅 레벨 (로컬 개발용)
+logging:
+  level:
+    com.example.spring: DEBUG
+    org.hibernate.SQL: DEBUG

@@ -12,6 +12,7 @@ import com.example.spring.entity.LoanStatus;
 import com.example.spring.entity.Member;
 import com.example.spring.exception.EntityNotFoundException;
 import com.example.spring.exception.LoanException;
+import com.example.spring.exception.MemberNotFoundException;
 import com.example.spring.repository.BookRepository;
 import com.example.spring.repository.LoanRepository;
 import com.example.spring.repository.LoanSpecification;
@@ -39,6 +40,9 @@ public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
     private final MemberRepository memberRepository;
+
+    private static final BigDecimal DAIL_OVERDUE_FEE = new BigDecimal("500");
+    private static final int MAX_LOAN_COUNT = 5;
 
     @Override
     @Transactional
@@ -87,13 +91,13 @@ public class LoanServiceImpl implements LoanService {
         log.info("대여 생성 완료 - 대여 ID: {}, 회원: {}, 도서: {}, 반납예정일: {}",
                 savedLoan.getId(), member.getName(), book.getTitle(), dueDate);
 
-
         return LoanResponse.form(savedLoan);
     }
-    //todo 31 일까지 쿼리 확인
     @Override
     public Page<LoanResponse> getAllLoansWithPagination(Pageable pageable, String searchQuery, String statusFilter) {
-        log.info("대여 목록 페이징 조회 - 페이지: {}", pageable.getPageNumber());
+        log.info("대여 목록 페이징 조회 - 페이지: {}, 검색어: {}, 상태: {}", pageable.getPageNumber(),
+                searchQuery, statusFilter);
+
         Page<Loan> loanPage = loanRepository.findAll(
                 LoanSpecification.withFilters(searchQuery, statusFilter),
                 pageable
@@ -105,6 +109,7 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public Optional<LoanResponse> getLoanById(Long id) {
         log.info("대여 조회 요청 - ID: {}", id);
+
         return loanRepository.findById(id)
                 .map(LoanResponse::form);
     }
@@ -112,13 +117,18 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public LoanResponse updateLoan(Long loanId, UpdateLoanRequest request) {
         log.info("대여 정보 수정 요청 - ID: {}", loanId);
+
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new LoanException.LoanNotFoundException(loanId));
 
+        updateLoanStatus(loan, request.getStatus());
 
-        loanRepository.save(loan);
-        log.info("대여 정보 수정 완료 - ID: {}", loanId);
-        return LoanResponse.form(loan);
+        extendDueDate(loan, request.getDueDate());
+
+        Loan savedLoan = loanRepository.save(loan);
+
+        log.info("대여 정보 수정 완료 - ID: {}, 상태: {}, 반납예정일: {}", savedLoan.getId(), savedLoan.getStatus(), savedLoan.getDueDate());
+        return LoanResponse.form(savedLoan);
     }
 
     private void updateLoanStatus(Loan loan, LoanStatus newStatus) {
@@ -140,15 +150,27 @@ public class LoanServiceImpl implements LoanService {
         bookRepository.save(book);
     }
 
-    private void extendLoanStatus(Loan loan, LocalDateTime newDueDate) {}
+    private void extendDueDate(Loan loan, LocalDateTime newDueDate) {
+        if (newDueDate == null) {
+            return;
+        }
+
+        if (newDueDate.isBefore(LocalDateTime.now()) || newDueDate.isEqual(LocalDateTime.now())) {
+            throw new IllegalArgumentException("반납 예정일은 현재 시간보다 미래여야 합니다");
+        }
+
+        loan.setDueDate(newDueDate);
+        loan.setStatus(LoanStatus.ACTIVE);
+        log.info("대여 기간 연장 완료 - 대여 ID: {}, 새 반납예정일: {}", loan.getId(), newDueDate);
+    }
 
     @Override
     public void deleteLoan(Long loanId) {
         log.info("대여 삭제 요청 - ID: {}", loanId);
+
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new EntityNotFoundException("대여 정보를 찾을 수 없습니다"));
 
-        //todo 대여 중인 경우 도서 상태 복원 (수정)
         if (loan.getReturnDate() == null) {
             Book book = loan.getBook();
             book.setAvailable(true);
@@ -171,11 +193,15 @@ public class LoanServiceImpl implements LoanService {
         List<Loan> loanList = loanRepository.findAll(
                 LoanSpecification.byMemberId(memberId));
 
-        return List.of((LoanResponse) loanList);
+        return loanList.stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
     @Override
     public LoanResponse returnBookByMember(Long loanId, Long memberId) {
+        log.info("회원 직접 반납 요청 - 대여 ID: {}, 회원 ID: {}", loanId, memberId);
+
         if (memberId == null) {
             throw new EntityNotFoundException("회원 정보를 조회할 수 없습니다");
         }
@@ -198,190 +224,255 @@ public class LoanServiceImpl implements LoanService {
         Book book = loan.getBook();
         book.setAvailable(true);
 
+        log.info("회원 직접 반납 완료 - 대여 ID: {}", loanId);
         return LoanResponse.form(savedLoan);
     }
 
     @Override
     public List<LoanResponse> getAllLoans() {
-        // todo check
-        // return List.of((LoanResponse) loanRepository.findAll());
+        log.info("전체 대여 목록 조회 요청");
 
-        // 수정완료.
         return loanRepository.findAll().stream()
                 .map(LoanResponse::form)
                 .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getLoansByMemberId(Long memberId) {
-
+        log.info("회원별 대여 목록 조회 - 회원 ID: {}", memberId);
 
         List<Loan> loanList = loanRepository.findByMemberId(memberId);
 
-        // todo 수정필요
-        if (loanList.isEmpty()) {
-            throw new IllegalArgumentException("대여 목록을 가져오지 못하였습니다");
-        }
         if (memberId == null) {
             throw new EntityNotFoundException("회원 정보를 조회할 수 없습니다");
         }
-        return List.of((LoanResponse) loanList);
+
+        return loanList.stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getLoansByBookId(Long bookId) {
+        log.info("도서별 대여 목록 조회 - 도서 ID: {}", bookId);
+
         List<Loan> loanList = loanRepository.findByBookId(bookId);
 
-        // todo 수정필요
-        if (loanList.isEmpty()) {
-            throw new IllegalArgumentException("대여 목록을 가져오지 못하였습니다");
-        }
         if (bookId == null) {
             throw new IllegalArgumentException("도서 정보를 조회할 수 없습니다");
         }
-        return List.of((LoanResponse) loanList);
+
+        return loanList.stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getActiveLoans() {
-        List<Loan> loanList = loanRepository.findByReturnDateIsNull();
-        if (loanList.isEmpty()) {
-            throw new IllegalArgumentException("대여 목록을 가져오지 못하였습니다");
-        }
-        return List.of((LoanResponse) loanList);
+        log.info("활성화 되어있는 모든 대여 목록 조회");
+
+        return loanRepository.findByReturnDateIsNull().stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getActiveLoansByMemberId(Long memberId) {
+        log.info("회원별 대여 중인 대여 조회 - 회원 ID: {}", memberId);
+
         List<Loan> loanList = loanRepository.findByMemberIdAndReturnDateIsNull(memberId);
-        if (loanList.isEmpty()) {
-            throw new IllegalArgumentException("대여 목록을 가져오지 못하였습니다");
-        }
+
         if (memberId == null) {
             throw new EntityNotFoundException("회원 정보를 조회할 수 없습니다");
         }
-        return List.of((LoanResponse) loanList);
+
+        return loanList.stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getOverdueLoans() {
-        List<Loan> loanList = loanRepository.findByReturnDateIsNull();
-        if (loanList.isEmpty()) {
-            throw new IllegalArgumentException("대여 목록을 가져오지 못하였습니다");
-        }
-        for (int i = 0; i < loanList.size(); i++) {
-            loanList.get(i).isOverdue();
-        }
-        return List.of();
+        log.info("연체된 대여 목록 조회");
+
+        LocalDateTime now = LocalDateTime.now();
+
+        return loanRepository.findOverdueLoans(now).stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getLoansByDateRange(LocalDateTime startDate,
                                                   LocalDateTime endDate) {
-        List<Loan> loanList = loanRepository.findByLoanDateBetween(startDate, endDate);
-        if (loanList.isEmpty()) {
-            throw new IllegalArgumentException("대여 목록을 가져오지 못하였습니다");
-        }
-        return List.of((LoanResponse) loanList);
+        log.info("기간별 대여 조회 - 시작: {}, 종료: {}", startDate, endDate);
+
+        return loanRepository.findByLoanDateBetween(startDate, endDate).stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public LoanResponse returnBook(Long loanId) {
+        log.info("관리자 도서 반납 요청 - 대여 ID: {}", loanId);
+
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new LoanException.LoanNotFoundException(loanId));
         if (loan.getStatus().equals(LoanStatus.RETURNED)) {
             throw new LoanException.AlreadyReturnedException(loanId);
         }
         loan.returnBook();
+        Book book = loan.getBook();
+        book.setAvailable(true);
+
+        log.info("도서 반납 완료 - 대여 ID: {}, 도서명: {}", loanId, book.getTitle());
         return LoanResponse.form(loan);
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
     public LoanResponse extendLoan(Long loanId, ExtendLoanRequest request) {
+        log.info("대여 연장 요청 - 대여 ID: {}, 연장일수: {}", loanId, request.getDays());
+
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new LoanException.LoanNotFoundException(loanId));
+
+        if (loan.getReturnDate() != null) {
+            throw new LoanException.AlreadyReturnedException(loanId);
+        }
+        if (loan.getDueDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("연체된 도서는 연장할 수 없습니다");
+        }
+
         loan.extendLoan(request.getDays());
+        log.info("대여 연장 완료 - 새 반납예정일: {}", loan.getDueDate());
+
         return LoanResponse.form(loan);
     }
 
-    //todo 31 일까지 구현하기, 테스트
     @Override
+    @Transactional
     public void cancelLoan(Long loanId) {
+        log.info("대여 취소 요청 - ID: {}", loanId);
+
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new LoanException.LoanNotFoundException(loanId));
+
+        if (loan.getReturnDate() != null) {
+            throw new LoanException.AlreadyReturnedException(loanId);
+        }
+        Book book = loan.getBook();
+        book.setAvailable(true);
+
+        loan.cancel();
+        log.info("대여 취소 완료 - ID: {}", loanId);
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public BigDecimal getOverdueFee(Long loanId) {
-        return null;
+        log.debug("연체료 계산 요청 - 대여 ID: {}", loanId);
+
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new LoanException.LoanNotFoundException(loanId));
+
+        if (loan.getDueDate().isAfter(LocalDateTime.now())) {
+            return BigDecimal.ZERO;
+        }
+
+        long overdueDays = loan.getOverdueDays();
+        if (overdueDays <= 0) return BigDecimal.ZERO;
+
+        return DAIL_OVERDUE_FEE.multiply(BigDecimal.valueOf(overdueDays));
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public long getOverdueLoansCount() {
-        return 0;
+        log.debug("연체 건수 조회");
+
+        return loanRepository.countOverdueLoans();
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public boolean canMemberLoan(Long memberId) {
-        return false;
+        log.debug("대여 가능 여부 확인 - 회원 ID: {}", memberId);
+
+        if (memberRepository.findMemberById(memberId) == null) {
+            throw new MemberNotFoundException(memberId);
+        }
+
+        List<Loan> loanList = loanRepository.findByMemberIdAndReturnDateIsNull(memberId);
+
+        return loanList.size() < MAX_LOAN_COUNT;
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public boolean isBookAvailableForLoan(Long bookId) {
-        return false;
+        log.debug("도서 대여 가능 확인 - 도서 ID: {}", bookId);
+
+        return bookRepository.findById(bookId)
+                .map(Book::getAvailable)
+                .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없습니다"));
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getLoansByMemberName(String name) {
-        return List.of();
+        log.info("회원명으로 대여 검색 - 이름: {}", name);
+
+        return loanRepository.findByMemberName(name).stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getLoansByBookTitle(String title) {
-        return List.of();
+        log.info("도서명으로 대여 검색 - 제목: {}", title);
+
+        return loanRepository.findByBookTitle(title).stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getOverdueLoansByMemberEmail(String email) {
-        return List.of();
+        log.info("이메일로 연체 목록 조회 - 이메일: {}", email);
+
+        return loanRepository.findOverdueLoansByMemberEmail(email, LoanStatus.OVERDUE).stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getAllLoansWithDetails() {
-        return List.of();
+        log.info("대여 상세 목록(Fetch Join) 조회");
+
+        return loanRepository.findAllWithMemberAndBook().stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<MemberResponse> getMembersByBookTitle(String bookTitle) {
-        return List.of();
+        log.info("특정 도서 대여 회원 조회 - 도서명: {}", bookTitle);
+
+        return loanRepository.findMembersByBookTitle(bookTitle).stream()
+                .map(MemberResponse::from)
+                .collect(Collectors.toList());
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<BookResponse> getCurrentlyBorrowedBooksByMember(Long memberId) {
-        return List.of();
+        log.info("회원이 현재 대여 중인 도서 조회 - 회원 ID: {}", memberId);
+
+        return loanRepository.findCurrentlyBorrowedBooks(memberId).stream()
+                .map(BookResponse::from)
+                .collect(Collectors.toList());
     }
 
-    //todo 7 일까지 구현하기, 테스트
     @Override
     public List<LoanResponse> getOverdueLoansWithMemberInfo() {
-        return List.of();
+        log.info("연체 목록 상세 조회");
+
+        return loanRepository.findOverdueLoansWithMember(LoanStatus.OVERDUE).stream()
+                .map(LoanResponse::form)
+                .collect(Collectors.toList());
     }
 }
