@@ -1,5 +1,6 @@
 package com.example.spring.entity;
 
+import com.example.spring.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -66,10 +67,47 @@ public class Payment {
 
     // todo. 1월. 24일 과제.
     // onCreate
+    @PrePersist
+    protected void onCreate(){
+        createdDate = LocalDateTime.now();
+        updatedDate = LocalDateTime.now();
+    }
     // onUpdate
+    @PreUpdate
+    protected void onUpdate(){
+        updatedDate = LocalDateTime.now();
+    }
     // complete
+    public void complete(){
+        if (status != PaymentStatus.PENDING) {
+            throw new OrderException.InvalidOrderStateException("확인할 수 없는 결재 수단입니다" + this.status);
+        }
+        this.status = PaymentStatus.COMPLETED;
+        this.paymentDate = LocalDateTime.now();
+    }
     // fail
+    public void fail(String reason){
+        this.status = PaymentStatus.FAILED;
+        this.failureReason = reason;
+        this.failedDate = LocalDateTime.now();
+    }
     // cancel
+    public void cancel(){
+        this.status = PaymentStatus.CANCELLED;
+        this.cancelledDate = LocalDateTime.now();
+    }
     // refund
+    public void refund(BigDecimal amount){
+        this.refundedAmount = amount;
+        this.refundedDate = LocalDateTime.now();
+    }
+    //partialRefund
+    public void partialRefund(BigDecimal amount){
+        this.refundedAmount = amount;
+        this.refundedDate = LocalDateTime.now();
+    }
     // isCompleted
+    public boolean isCompleted(){
+        return this.status == PaymentStatus.COMPLETED;
+    }
 }

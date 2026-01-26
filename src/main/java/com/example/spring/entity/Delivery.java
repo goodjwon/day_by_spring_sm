@@ -1,5 +1,6 @@
 package com.example.spring.entity;
 
+import com.example.spring.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -58,11 +59,48 @@ public class Delivery {
 
 
     //todo 1.26 메서두 추가하기 과제.
-    // onCreate
+    // onCreate\
+    @PrePersist
+    protected  void onCreate(){
+        createdDate = LocalDateTime.now();
+        updatedDate = LocalDateTime.now();
+    }
     // onUpdate
+    @PreUpdate
+    protected  void onUpdate(){
+        updatedDate = LocalDateTime.now();
+    }
     // IN_TRANSIT
+    public void transit(){
+        if (status != DeliveryStatus.PREPARING) {
+            throw new OrderException.InvalidOrderStateException("배송을 시작할 수 없는 주문입니다 현재 상태: " + this.status);
+        }
+        this.status = DeliveryStatus.IN_TRANSIT;
+        this.shippedDate = LocalDateTime.now();
+    }
     // OUT_FOR_DELIVERY
+    public void outForDelivery() {
+        if (status != DeliveryStatus.IN_TRANSIT) {
+            throw new OrderException.InvalidOrderStateException("배송 중인 주문입니다" + this.status);
+        }
+        this.status = DeliveryStatus.OUT_FOR_DELIVERY;
+        this.estimatedDeliveryDate = LocalDateTime.now().plusDays(3);
+    }
     // DELIVERED
+    public void delivered() {
+        if (status != DeliveryStatus.OUT_FOR_DELIVERY) {
+            throw new OrderException.InvalidOrderStateException("배송 완료처리를 하지 않은 주문입니다" + this.status);
+        }
+        this.status = DeliveryStatus.DELIVERED;
+        this.deliveredDate = LocalDateTime.now();
+    }
     // FAILED
+    public void failed() {
+        this.status = DeliveryStatus.FAILED;
+    }
     // RETURNED
+    public void returned() {
+        this.status = DeliveryStatus.RETURNED;
+        this.deliveredDate = null;
+    }
 }
