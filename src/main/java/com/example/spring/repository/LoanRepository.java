@@ -14,10 +14,10 @@ import java.util.List;
 
 public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
 
-    @Query("SELECT l FROM Loan l WHERE l.member.id = :memberId ORDER BY l.loanDate DESC")
+    @Query("SELECT l FROM Loan l JOIN FETCH l.member WHERE l.member.id = :memberId")
     List<Loan> findByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT l FROM Loan l WHERE l.book.id = :bookId ORDER BY l.loanDate DESC")
+    @Query("SELECT l FROM Loan l JOIN FETCH l.book WHERE l.book.id = :bookId")
     List<Loan> findByBookId(@Param("bookId") Long bookId);
 
     @Query("SELECT l FROM Loan l WHERE l.member.id = :memberId AND l.returnDate IS NULL ORDER BY l.loanDate DESC")
