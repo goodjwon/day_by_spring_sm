@@ -80,7 +80,7 @@ public class Payment {
     // complete
     public void complete(){
         if (status != PaymentStatus.PENDING) {
-            throw new OrderException.InvalidOrderStateException("확인할 수 없는 결재 수단입니다" + this.status);
+throw new OrderException.InvalidOrderStateException("결제를 완료할 수 없는 상태입니다. 현재 상태: " + this.status);
         }
         this.status = PaymentStatus.COMPLETED;
         this.paymentDate = LocalDateTime.now();
