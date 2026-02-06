@@ -34,7 +34,7 @@ public class Payment {
     private PaymentStatus status = PaymentStatus.PENDING;
 
     @Column(nullable = false)
-    private int amount;
+    private BigDecimal amount;
 
     // 결제 일시
     private LocalDateTime paymentDate;

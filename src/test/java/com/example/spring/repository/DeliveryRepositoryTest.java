@@ -35,8 +35,8 @@ public class DeliveryRepositoryTest {
         testMember = Member.builder()
                 .name("Test Member")
                 .email("delivery" + (++uniqueCounter) + "@test.com")
-                .password("password")
-                .role(Role.USER)
+//                .password("password")
+//                .role(Role.USER)
                 .membershipType(MembershipType.REGULAR)
                 .joinDate(LocalDateTime.now())
                 .build();

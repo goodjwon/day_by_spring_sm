@@ -34,7 +34,6 @@ public class Delivery {
     @Column(nullable = false)
     private String phoneNumber;
 
-    @Column(nullable = false)
     private String zipCode;
 
     @Column(nullable = false)
@@ -103,5 +102,9 @@ public class Delivery {
     public void returned() {
         this.status = DeliveryStatus.RETURNED;
         this.deliveredDate = null;
+    }
+
+    public boolean canChangeAddress() {
+        return status == DeliveryStatus.PREPARING;
     }
 }
