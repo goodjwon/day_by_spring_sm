@@ -89,7 +89,7 @@ public class Delivery {
     // DELIVERED
     public void delivered() {
         if (status != DeliveryStatus.OUT_FOR_DELIVERY) {
-            throw new DeliveryException.InvalidDeliveryStateException("배송 완료처리를 하지 않은 주문입니다" + this.status);
+throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리할 수 없는 상태입니다. 현재 상태: " + this.status);
         }
         this.status = DeliveryStatus.DELIVERED;
         this.deliveredDate = LocalDateTime.now();
