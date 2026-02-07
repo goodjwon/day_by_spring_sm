@@ -1,5 +1,6 @@
 package com.example.spring.traditional.repository;
 
+import com.example.spring.domain.vo.Money;
 import com.example.spring.entity.Book;
 
 import java.sql.*;
@@ -34,7 +35,7 @@ public class TraditionalBookRepository {
                         .id(rs.getLong("id"))
                         .title(rs.getString("title"))
                         .author(rs.getString("author"))
-                        .price(rs.getBigDecimal("price"))
+//                        .price(Money.of("price"))
                         .build();
             }
         } catch (SQLException e) {
@@ -55,7 +56,7 @@ public class TraditionalBookRepository {
                         .id(rs.getLong("id"))
                         .title(rs.getString("title"))
                         .author(rs.getString("author"))
-                        .price(rs.getBigDecimal("price"))
+//                        .price(rs.getBigDecimal("price"))
                         .build());
             }
         } catch (SQLException e) {

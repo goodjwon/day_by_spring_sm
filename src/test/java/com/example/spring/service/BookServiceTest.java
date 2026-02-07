@@ -1,5 +1,7 @@
 package com.example.spring.service;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.dto.request.CreateBookRequest;
 import com.example.spring.dto.request.UpdateBookRequest;
 import com.example.spring.dto.response.BookResponse;
@@ -54,8 +56,8 @@ public class BookServiceTest {
         testBook = Book.builder()
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45.99"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45.99")))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -64,8 +66,8 @@ public class BookServiceTest {
                 .id(1L)
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45.99"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45.99")))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -73,8 +75,8 @@ public class BookServiceTest {
         createBookRequest = CreateBookRequest.builder()
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45.99"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45.99")))
                 .available(true)
                 .build();
 
@@ -95,7 +97,7 @@ public class BookServiceTest {
         @DisplayName("정상적인 도서 생성")
         void createBook_유효한도서_생성성공() {
             // Given
-            given(bookRepository.existsByIsbn(createBookRequest.getIsbn())).willReturn(false);
+            given(bookRepository.existsByIsbn(createBookRequest.getIsbn().getValue())).willReturn(false);
             given(bookRepository.save(any(Book.class))).willReturn(savedBook);
 
             // When
@@ -107,7 +109,7 @@ public class BookServiceTest {
             assertThat(result.getTitle()).isEqualTo("Clean Code");
             assertThat(result.getIsbn()).isEqualTo("9780132350884");
 
-            verify(bookRepository).existsByIsbn(createBookRequest.getIsbn());
+            verify(bookRepository).existsByIsbn(createBookRequest.getIsbn().getValue());
             verify(bookRepository).save(any(Book.class));
         }
 
@@ -115,14 +117,14 @@ public class BookServiceTest {
         @DisplayName("중복 ISBN으로 도서 생성 실패")
         void createBook_중복ISBN_예외발생() {
             // Given
-            given(bookRepository.existsByIsbn(createBookRequest.getIsbn())).willReturn(true);
+            given(bookRepository.existsByIsbn(createBookRequest.getIsbn().getValue())).willReturn(true);
 
             // When & Then
             assertThatThrownBy(() -> bookService.createBook(createBookRequest))
                     .isInstanceOf(BookException.DuplicateIsbnException.class)
                     .hasMessageContaining("이미 존재하는 ISBN입니다");
 
-            verify(bookRepository).existsByIsbn(createBookRequest.getIsbn());
+            verify(bookRepository).existsByIsbn(createBookRequest.getIsbn().getValue());
             verify(bookRepository, never()).save(any());
         }
 
@@ -133,8 +135,8 @@ public class BookServiceTest {
             CreateBookRequest invalidRequest = CreateBookRequest.builder()
                     .title(null)
                     .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
+                    .isbn(ISBN.of("9780132350884"))
+                    .price(Money.of(new BigDecimal("45.99")))
                     .available(true)
                     .build();
 
@@ -151,8 +153,8 @@ public class BookServiceTest {
             CreateBookRequest invalidRequest = CreateBookRequest.builder()
                     .title("Clean Code")
                     .author(null)
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
+                    .isbn(ISBN.of("9780132350884"))
+                    .price(Money.of(new BigDecimal("45.99")))
                     .available(true)
                     .build();
 
@@ -170,7 +172,7 @@ public class BookServiceTest {
                     .title("Clean Code")
                     .author("Robert C. Martin")
                     .isbn(null)
-                    .price(new BigDecimal("45.99"))
+                    .price(Money.of(new BigDecimal("45.99")))
                     .available(true)
                     .build();
 
@@ -187,8 +189,8 @@ public class BookServiceTest {
             CreateBookRequest invalidRequest = CreateBookRequest.builder()
                     .title("Clean Code")
                     .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("-10.00"))
+                    .isbn(ISBN.of("9780132350884"))
+                    .price(Money.of(new BigDecimal("-10.00")))
                     .available(true)
                     .build();
 
@@ -227,8 +229,8 @@ public class BookServiceTest {
                     .id(1L)
                     .title("Clean Code")
                     .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
+                    .isbn(ISBN.of("9780132350884"))
+                    .price(Money.of(new BigDecimal("45.99")))
                     .available(true)
                     .createdDate(LocalDateTime.now())
                     .deletedDate(LocalDateTime.now())
@@ -280,8 +282,8 @@ public class BookServiceTest {
                             .id(2L)
                             .title("Effective Java")
                             .author("Joshua Bloch")
-                            .isbn("9780134685991")
-                            .price(new BigDecimal("52.99"))
+                            .isbn(ISBN.of("9780134685991"))
+                            .price(Money.of(new BigDecimal("52.99")))
                             .available(true)
                             .createdDate(LocalDateTime.now())
                             .build(),
@@ -289,8 +291,8 @@ public class BookServiceTest {
                             .id(3L)
                             .title("Spring in Action")
                             .author("Craig Walls")
-                            .isbn("9781617294945")
-                            .price(new BigDecimal("39.99"))
+                            .isbn(ISBN.of("9781617294945"))
+                            .price(Money.of(new BigDecimal("39.99")))
                             .available(true)
                             .createdDate(LocalDateTime.now())
                             .build());
@@ -530,7 +532,7 @@ public class BookServiceTest {
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getPrice()).isBetween(minPrice, maxPrice);
+            assertThat(result.get(0).getPrice().getAmount()).isBetween(minPrice, maxPrice);
         }
 
         @Test
@@ -556,8 +558,8 @@ public class BookServiceTest {
                             .id(2L)
                             .title("Effective Java")
                             .author("Joshua Bloch")
-                            .isbn("9780134685991")
-                            .price(new BigDecimal("52"))
+                            .isbn(ISBN.of("9780134685991"))
+                            .price(Money.of(new BigDecimal("52")))
                             .available(true)
                             .createdDate(LocalDateTime.now())
                             .build(),
@@ -565,8 +567,8 @@ public class BookServiceTest {
                             .id(3L)
                             .title("Clean Architecture")
                             .author("Robert C. Martin")
-                            .isbn("9780134494166")
-                            .price(new BigDecimal("48"))
+                            .isbn(ISBN.of("9780134494166"))
+                            .price(Money.of(new BigDecimal("48")))
                             .available(true)
                             .createdDate(LocalDateTime.now())
                             .build()
@@ -652,7 +654,7 @@ public class BookServiceTest {
         void getTotalBooksCount_전체도서수_반환() {
             // Given
             List<Book> allBooks = List.of(savedBook,
-                    Book.builder().id(2L).title("Test").author("Test").isbn("123").price(BigDecimal.TEN).build());
+                    Book.builder().id(2L).title("Test").author("Test").isbn(ISBN.of("123")).price(Money.of(BigDecimal.TEN)).build());
             given(bookRepository.findAll()).willReturn(allBooks);
 
             // When

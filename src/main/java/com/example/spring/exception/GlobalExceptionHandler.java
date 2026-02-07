@@ -1,14 +1,11 @@
 package com.example.spring.exception;
 
-import com.example.spring.exception.BusinessException;
-import com.example.spring.exception.MemberNotFoundException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -49,8 +46,8 @@ public class GlobalExceptionHandler {
     /**
      * 회원 찾기 실패 예외 처리
      */
-    @ExceptionHandler(MemberNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberNotFoundException e) {
+    @ExceptionHandler(MemberException.MemberNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberException.MemberNotFoundException e) {
         log.warn("회원 조회 실패: {}", e.getMessage());
 
         ErrorResponse response = ErrorResponse.builder()

@@ -1,5 +1,7 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.Money;
+import com.example.spring.entity.Role;
 import com.example.spring.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,8 +37,8 @@ public class RefundRepositoryTest {
         testMember = Member.builder()
                 .name("Test Member")
                 .email("refund" + (++uniqueCounter) + "@test.com")
-//                .password("password")
-//                .role(Role.USER)
+                .password("password")
+                .role(Role.USER)
                 .membershipType(MembershipType.REGULAR)
                 .joinDate(LocalDateTime.now())
                 .build();
@@ -44,7 +46,7 @@ public class RefundRepositoryTest {
 
         testOrder = Order.builder()
                 .member(testMember)
-                .totalAmount(new BigDecimal("50000"))
+                .totalAmount(Money.of(new BigDecimal("50000")))
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.DELIVERED)
                 .build();
@@ -57,7 +59,7 @@ public class RefundRepositoryTest {
         Refund refund = Refund.builder()
                 .order(order)
                 .status(status)
-                .amount(amount)
+                .amount(Money.of(amount))
                 .reason("테스트 환불 사유")
                 .requestedBy(requestedBy)
                 .requestDate(LocalDateTime.now())
@@ -79,7 +81,7 @@ public class RefundRepositoryTest {
             Refund refund = Refund.builder()
                     .order(testOrder)
                     .status(RefundStatus.REQUESTED)
-                    .amount(new BigDecimal("30000"))
+                    .amount(Money.of(new BigDecimal("30000")))
                     .reason("상품 불량")
                     .requestedBy("고객")
                     .requestDate(LocalDateTime.now())
@@ -90,7 +92,7 @@ public class RefundRepositoryTest {
 
             // Then
             assertThat(saved.getId()).isNotNull();
-            assertThat(saved.getAmount()).isEqualByComparingTo(new BigDecimal("30000"));
+            assertThat(saved.getAmount()).isEqualToComparingFieldByField(new BigDecimal("30000"));
             assertThat(saved.getReason()).isEqualTo("상품 불량");
         }
 
@@ -106,7 +108,7 @@ public class RefundRepositoryTest {
 
             // Then
             assertThat(found).isPresent();
-            assertThat(found.get().getAmount()).isEqualByComparingTo(new BigDecimal("20000"));
+            assertThat(found.get().getAmount()).isEqualToComparingFieldByField(new BigDecimal("20000"));
         }
 
         @Test
@@ -245,7 +247,7 @@ public class RefundRepositoryTest {
             Refund refund1 = Refund.builder()
                     .order(testOrder)
                     .status(RefundStatus.REQUESTED)
-                    .amount(new BigDecimal("10000"))
+                    .amount(Money.of(new BigDecimal("10000")))
                     .reason("사유1")
                     .requestedBy("고객")
                     .build();
@@ -256,7 +258,7 @@ public class RefundRepositoryTest {
             Refund refund2 = Refund.builder()
                     .order(order2)
                     .status(RefundStatus.REQUESTED)
-                    .amount(new BigDecimal("20000"))
+                    .amount(Money.of(new BigDecimal("20000")))
                     .reason("사유2")
                     .requestedBy("고객")
                     .build();
@@ -271,7 +273,7 @@ public class RefundRepositoryTest {
 
             // Then - 5일 전 환불만 조회됨
             assertThat(refunds).hasSize(1);
-            assertThat(refunds.get(0).getAmount()).isEqualByComparingTo(new BigDecimal("10000"));
+            assertThat(refunds.get(0).getAmount()).isEqualToComparingFieldByField(new BigDecimal("10000"));
         }
     }
 
@@ -456,7 +458,7 @@ public class RefundRepositoryTest {
     private Order createNewOrder() {
         Order order = Order.builder()
                 .member(testMember)
-                .totalAmount(new BigDecimal("30000"))
+                .totalAmount(Money.of(new BigDecimal("30000")))
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.DELIVERED)
                 .build();

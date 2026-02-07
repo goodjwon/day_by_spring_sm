@@ -1,6 +1,8 @@
 package com.example.spring.repository;
 
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.entity.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,8 +37,8 @@ public class BookRepositoryTest {
         sampleBook = Book.builder()
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45.99"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45.99")))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -48,8 +50,8 @@ public class BookRepositoryTest {
         Book newBook = Book.builder()
                 .author("새 저자")
                 .title("새 도서")
-                .price(new BigDecimal("10000"))
-                .isbn("9780132350885") // 유니크한 ISBN 생성
+                .price(Money.of(new BigDecimal("10000")))
+                .isbn(ISBN.of("9780132350885")) // 유니크한 ISBN 생성
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -102,16 +104,16 @@ public class BookRepositoryTest {
         Book book1 = Book.builder()
                 .title("Effective Java")
                 .author("Joshua Bloch")
-                .isbn("9780134685991")
-                .price(new BigDecimal("52.99"))
+                .isbn(ISBN.of("9780134685991"))
+                .price(Money.of(new BigDecimal("52.99")))
                 .createdDate(LocalDateTime.now().minusDays(1))
                 .build();
 
         Book book2 = Book.builder()
                 .title("Spring in Action")
                 .author("Craig Walls")
-                .isbn("9781617294945")
-                .price(new BigDecimal("39.99"))
+                .isbn(ISBN.of("9781617294945"))
+                .price(Money.of(new BigDecimal("39.99")))
                 .createdDate(LocalDateTime.now())
                 .build();
         entityManager.persistAndFlush(book1);
@@ -200,24 +202,24 @@ public class BookRepositoryTest {
             Book cleanCode = Book.builder()
                     .title("Clean Code")
                     .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45.99"))
+                    .isbn(ISBN.of("9780132350884"))
+                    .price(Money.of(new BigDecimal("45.99")))
                     .createdDate(LocalDateTime.now())
                     .build();
 
             Book effectiveJava = Book.builder()
                     .title("Effective Java")
                     .author("Joshua Bloch")
-                    .isbn("9780134685991")
-                    .price(new BigDecimal("52.99"))
+                    .isbn(ISBN.of("9780134685991"))
+                    .price(Money.of(new BigDecimal("52.99")))
                     .createdDate(LocalDateTime.now())
                     .build();
 
             Book springInAction = Book.builder()
                     .title("Spring in Action")
                     .author("Craig Walls")
-                    .isbn("9781617294945")
-                    .price(new BigDecimal("39.99"))
+                    .isbn(ISBN.of("9781617294945"))
+                    .price(Money.of(new BigDecimal("39.99")))
                     .createdDate(LocalDateTime.now())
                     .build();
 
@@ -239,8 +241,8 @@ public class BookRepositoryTest {
             Book availableBook = Book.builder()
                     .title("Available Book")
                     .author("Author A")
-                    .isbn("1111111111111")
-                    .price(new BigDecimal("30.00"))
+                    .isbn(ISBN.of("1111111111111"))
+                    .price(Money.of(new BigDecimal("30.00")))
                     .available(true)
                     .createdDate(LocalDateTime.now())
                     .build();
@@ -248,8 +250,8 @@ public class BookRepositoryTest {
             Book unavailableBook = Book.builder()
                     .title("Unavailable Book")
                     .author("Author B")
-                    .isbn("2222222222222")
-                    .price(new BigDecimal("25.00"))
+                    .isbn(ISBN.of("2222222222222"))
+                    .price(Money.of(new BigDecimal("25.00")))
                     .available(false)
                     .createdDate(LocalDateTime.now())
                     .build();

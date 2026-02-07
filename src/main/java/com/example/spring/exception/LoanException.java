@@ -94,4 +94,16 @@ public class LoanException {
             super("UNAUTHORIZED_ACCESS", message);
         }
     }
+
+    public static class ExtensionTooEarlyException extends BusinessException {
+        public ExtensionTooEarlyException(String message) {
+            super("EXTENSION_TOO_EARLY", message);
+        }
+    }
+
+    public static class ExtensionLimitExceededException extends BusinessException {
+        public ExtensionLimitExceededException(String message) {
+            super("EXTENSION_LIMIT_EXCEEDED", message);
+        }
+    }
 }

@@ -1,11 +1,9 @@
 package com.example.spring.entity;
 
 
+import com.example.spring.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,16 +28,23 @@ public class Refund {
     private RefundStatus status = RefundStatus.REQUESTED;
 
     @Column(nullable = false)
-    private BigDecimal amount;
+    private Money amount;
+
+    private String bankName;
+    private String accountNumber;
+    private String accountHolder;
 
     private String reason;
     private String requestedBy;
     private LocalDateTime requestDate;
-
+    private String approvedBy;
     private LocalDateTime approvedDate;
+    private String rejectedBy;
+    private String rejectionReason;
     private LocalDateTime rejectedDate;
     private LocalDateTime completedDate;
     private LocalDateTime refundDate;
+    private String processingMemo;
 
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
@@ -57,7 +62,7 @@ public class Refund {
         updatedDate = LocalDateTime.now();
     }
 
-    public void requestRefund(BigDecimal amount, String requestedBy){
+    public void requestRefund(Money amount, String requestedBy){
         this.amount = amount;
         this.requestedBy = requestedBy;
         this.requestDate = LocalDateTime.now();
@@ -68,15 +73,39 @@ public class Refund {
         this.completedDate = LocalDateTime.now();
     }
 
+    public void complete(String transactionId){
+        this.status = RefundStatus.COMPLETED;
+        this.completedDate = LocalDateTime.now();
+    }
+
     public void reject(String reason){
         this.status = RefundStatus.REJECTED;
         this.rejectedDate = LocalDateTime.now();
         this.reason = reason;
     }
 
-    public void approve(){
+    public void reject(String rejecter, String rejectionReason) {
+        this.requestedBy = rejecter;
+        reject(rejectionReason);
+    }
+
+    public void approve(String approver){
         this.status = RefundStatus.APPROVED;
         this.approvedDate = LocalDateTime.now();
+    }
+
+    public void fail(String reason) {
+        this.reason = reason;
+        this.updatedDate = LocalDateTime.now();
+    }
+
+    public void startProcessing() {
+        this.status = RefundStatus.PROCESSING;
+        this.requestDate = LocalDateTime.now();
+    }
+
+    public boolean canCancel() {
+        return this.status == RefundStatus.REQUESTED;
     }
 
     public boolean isCompleted(){

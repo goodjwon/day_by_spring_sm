@@ -1,5 +1,6 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,7 +31,15 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Money price;
 
-    private BigDecimal totalPrice;
+    private Money totalPrice;
+
+    public void changeQuantity(int quantity) {
+        totalPrice = price.multiply(quantity);
+    }
+
+    public void updatePrice(Money price) {
+        this.price = price;
+    }
 }

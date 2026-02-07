@@ -1,5 +1,7 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -46,12 +48,12 @@ public class Book {
             message = "올바른 ISBN 형식이 아닙니다"
     )
     @Column(nullable = false, unique = true, length = 17)
-    private String isbn;
+    private ISBN isbn;
 
     @NotNull(message = "가격은 필수입니다")
     @DecimalMin(value = "0.0", message = "가격은 0 이상이어야 합니다")
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private Money price;
 
     @Builder.Default
     @Column(nullable = false)
@@ -68,6 +70,18 @@ public class Book {
     @Column(name = "deleted_date")
     private LocalDateTime deletedDate;
 
+
+    @PrePersist
+    protected void onCreate(){
+        createdDate = LocalDateTime.now();
+        updatedDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        updatedDate = LocalDateTime.now();
+    }
+
     public boolean isDeleted() {
         return deletedDate != null;
     }
@@ -80,5 +94,13 @@ public class Book {
     public void restore() {
         this.deletedDate = null;
         this.available = true;
+    }
+
+    public void setAvailability(boolean available) {
+        this.available = available;
+    }
+
+    public void loanOut() {
+        this.available = false;
     }
 }

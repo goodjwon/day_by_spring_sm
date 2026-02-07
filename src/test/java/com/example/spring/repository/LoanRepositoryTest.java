@@ -1,5 +1,7 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.entity.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,8 +39,8 @@ public class LoanRepositoryTest {
         Book book = Book.builder()
                 .title(title)
                 .author(author)
-                .price(new BigDecimal("20000"))
-                .isbn("ISBN" + (System.nanoTime() % 1000000000L))
+                .price(Money.of(new BigDecimal("20000")))
+                .isbn(ISBN.of("ISBN" + (System.nanoTime() % 1000000000L)))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();

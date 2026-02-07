@@ -1,5 +1,7 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.entity.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +38,8 @@ public class OrderItemRepositoryTest {
         Book book = Book.builder()
                 .title(title)
                 .author(author)
-                .price(price)
-                .isbn("ISBN" + (System.nanoTime() % 1000000000L))
+                .price(Money.of(price))
+                .isbn(ISBN.of("ISBN" + (System.nanoTime() % 1000000000L)))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -47,7 +49,7 @@ public class OrderItemRepositoryTest {
     private Order createAndSaveOrder(Member member) {
         Order order = Order.builder()
                 .member(member)
-                .totalAmount(new BigDecimal("10000"))
+                .totalAmount(Money.of(new BigDecimal("10000")))
                 .orderDate(LocalDateTime.now())
                 .build();
         return entityManager.persistAndFlush(order);

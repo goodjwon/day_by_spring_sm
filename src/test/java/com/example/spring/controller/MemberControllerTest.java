@@ -5,14 +5,13 @@ import com.example.spring.dto.request.UpdateMemberRequest;
 import com.example.spring.dto.response.MemberResponse;
 import com.example.spring.entity.MembershipType;
 import com.example.spring.exception.DuplicateEmailException;
-import com.example.spring.exception.MemberNotFoundException;
+import com.example.spring.exception.MemberException;
 import com.example.spring.service.MemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -166,7 +165,7 @@ class MemberControllerTest {
         // Given
         Long memberId = 999L;
         given(memberService.findMemberById(memberId))
-                .willThrow(new MemberNotFoundException(memberId));
+                .willThrow(new MemberException.MemberNotFoundException(memberId));
 
         // When & Then
         mockMvc.perform(get("/api/v1/members/{id}", memberId)

@@ -1,5 +1,7 @@
 package com.example.spring.service.impl;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.dto.request.CreateBookRequest;
 import com.example.spring.dto.request.UpdateBookRequest;
 import com.example.spring.dto.response.BookResponse;
@@ -45,13 +47,13 @@ public class BookServiceImpl implements BookService {
         if (!StringUtils.hasText(request.getAuthor())) {
             throw new BookException.InvalidBookDataException("저자는 필수입니다");
         }
-        if (!StringUtils.hasText(request.getIsbn())) {
+        if (!StringUtils.hasText(request.getIsbn().getValue())) {
             throw new BookException.InvalidBookDataException("ISBN은 필수입니다");
         }
-        if (request.getPrice() == null || request.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+        if (request.getPrice() == null || request.getPrice().compareTo(Money.ZERO) < 0) {
             throw new BookException.InvalidBookDataException("가격은 0 이상이어야 합니다");
         }
-        if (bookRepository.existsByIsbn(request.getIsbn())) {
+        if (bookRepository.existsByIsbn(request.getIsbn().getValue())) {
             throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다");
         }
 
@@ -113,8 +115,8 @@ public class BookServiceImpl implements BookService {
 
         existingBook.setTitle(request.getTitle());
         existingBook.setAuthor(request.getAuthor());
-        existingBook.setIsbn(request.getIsbn());
-        existingBook.setPrice(request.getPrice());
+        existingBook.setIsbn(ISBN.of(request.getIsbn()));
+        existingBook.setPrice(Money.of(request.getPrice()));
         existingBook.setAvailable(request.getAvailable());
         existingBook.setUpdatedDate(LocalDateTime.now());
 
@@ -196,8 +198,8 @@ public class BookServiceImpl implements BookService {
         List<Book> filteredBooks = allActiveBooks.stream()
                 .filter(book -> !StringUtils.hasText(title) || book.getTitle().toLowerCase().contains(title.toLowerCase()))
                 .filter(book -> !StringUtils.hasText(author) || book.getAuthor().toLowerCase().contains(author.toLowerCase()))
-                .filter(book -> minPrice == null || book.getPrice().compareTo(minPrice) >= 0)
-                .filter(book -> maxPrice == null || book.getPrice().compareTo(maxPrice) <= 0)
+                .filter(book -> minPrice == null || book.getPrice().compareTo(Money.of(minPrice)) >= 0)
+                .filter(book -> maxPrice == null || book.getPrice().compareTo(Money.of(maxPrice)) <= 0)
                 .filter(book -> available == null || book.getAvailable().equals(available))
                 .collect(Collectors.toList());
 
