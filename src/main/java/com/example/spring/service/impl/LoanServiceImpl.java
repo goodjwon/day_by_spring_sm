@@ -12,7 +12,7 @@ import com.example.spring.entity.LoanStatus;
 import com.example.spring.entity.Member;
 import com.example.spring.exception.EntityNotFoundException;
 import com.example.spring.exception.LoanException;
-import com.example.spring.exception.MemberNotFoundException;
+import com.example.spring.exception.MemberException;
 import com.example.spring.repository.BookRepository;
 import com.example.spring.repository.LoanRepository;
 import com.example.spring.repository.LoanSpecification;
@@ -396,7 +396,7 @@ public class LoanServiceImpl implements LoanService {
         log.debug("대여 가능 여부 확인 - 회원 ID: {}", memberId);
 
         if (memberRepository.findMemberById(memberId) == null) {
-            throw new MemberNotFoundException(memberId);
+            throw new MemberException.MemberNotFoundException(memberId);
         }
 
         List<Loan> loanList = loanRepository.findByMemberIdAndReturnDateIsNull(memberId);

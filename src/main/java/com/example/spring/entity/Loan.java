@@ -1,5 +1,6 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.Money;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -59,7 +60,9 @@ public class Loan {
 
     @Column(name = "overdue_fee", precision = 10, scale = 2)
     @Builder.Default
-    private BigDecimal overdueFee = BigDecimal.ZERO;
+    private Money overdueFee = Money.ZERO;
+
+    private Integer extensionCount;
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
@@ -92,12 +95,12 @@ public class Loan {
     /**
      * 연체료 계산 (일당 1000원)
      */
-    public BigDecimal calculateOverdueFee() {
+    public Money calculateOverdueFee() {
         long overdueDays = getOverdueDays();
         if (overdueDays <= 0) {
-            return BigDecimal.ZERO;
+            return Money.ZERO;
         }
-        return BigDecimal.valueOf(overdueDays * 1000);
+        return Money.of(BigDecimal.valueOf(overdueDays * 1000));
     }
 
     /**

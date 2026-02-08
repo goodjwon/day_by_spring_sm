@@ -1,5 +1,6 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.Money;
 import com.example.spring.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,7 +35,7 @@ public class Payment {
     private PaymentStatus status = PaymentStatus.PENDING;
 
     @Column(nullable = false)
-    private BigDecimal amount;
+    private Money amount;
 
     // 결제 일시
     private LocalDateTime paymentDate;
@@ -58,7 +59,7 @@ public class Payment {
 
     // 취소/환불 정보
     private LocalDateTime cancelledDate;
-    private BigDecimal refundedAmount;
+    private Money refundedAmount;
     private LocalDateTime refundedDate;
 
     // 생성 및 수정 일시
@@ -78,7 +79,7 @@ public class Payment {
         updatedDate = LocalDateTime.now();
     }
     // complete
-    public void complete(){
+    public void complete(String s){
         if (status != PaymentStatus.PENDING) {
 throw new OrderException.InvalidOrderStateException("결제를 완료할 수 없는 상태입니다. 현재 상태: " + this.status);
         }
@@ -97,17 +98,21 @@ throw new OrderException.InvalidOrderStateException("결제를 완료할 수 없
         this.cancelledDate = LocalDateTime.now();
     }
     // refund
-    public void refund(BigDecimal amount){
+    public void refund(Money amount){
         this.refundedAmount = amount;
         this.refundedDate = LocalDateTime.now();
     }
     //partialRefund
-    public void partialRefund(BigDecimal amount){
+    public void partialRefund(Money amount){
         this.refundedAmount = amount;
         this.refundedDate = LocalDateTime.now();
     }
     // isCompleted
     public boolean isCompleted(){
+        return this.status == PaymentStatus.COMPLETED;
+    }
+
+    public boolean isRefundable() {
         return this.status == PaymentStatus.COMPLETED;
     }
 }

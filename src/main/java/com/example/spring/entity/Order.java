@@ -1,5 +1,6 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.Money;
 import com.example.spring.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,11 +43,11 @@ public class Order {
 
 
     @Column(nullable = false)
-    private BigDecimal totalAmount;
+    private Money totalAmount;
 
     @Column(nullable = false)
     @Builder.Default
-    private BigDecimal discountAmount = BigDecimal.ZERO;
+    private Money discountAmount = Money.ZERO;
 
 
     @Builder.Default
@@ -140,7 +141,7 @@ public class Order {
         this.deliveredDate = LocalDateTime.now();
     }
 
-    public BigDecimal getFinalAmount() {
+    public Money getFinalAmount() {
         return totalAmount.subtract(discountAmount);
     }
 

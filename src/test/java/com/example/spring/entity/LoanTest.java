@@ -1,5 +1,7 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -33,6 +35,8 @@ class LoanTest {
                 .id(1L)
                 .name("홍길동")
                 .email("hong@example.com")
+                .password("test-password")
+                .role(Role.USER)
                 .membershipType(MembershipType.REGULAR)
                 .joinDate(LocalDateTime.now())
                 .build();
@@ -42,8 +46,8 @@ class LoanTest {
                 .id(1L)
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45000"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45000")))
                 .available(true)
                 .build();
     }
@@ -76,7 +80,7 @@ class LoanTest {
             assertThat(loan.getLoanDate()).isEqualTo(loanDate);
             assertThat(loan.getDueDate()).isEqualTo(dueDate);
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE); // Default value
-            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO); // Default value
+            assertThat(loan.getOverdueFee()).isEqualTo(Money.zero()); // Default value
         }
 
         @Test
@@ -94,7 +98,7 @@ class LoanTest {
                     .loanDate(loanDate)
                     .dueDate(dueDate)
                     .status(LoanStatus.ACTIVE)
-                    .overdueFee(BigDecimal.ZERO)
+                    .overdueFee(Money.zero())
                     .createdDate(createdDate)
                     .build();
 
@@ -121,7 +125,7 @@ class LoanTest {
 
             // then
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
-            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(loan.getOverdueFee()).isEqualTo(Money.zero());
             assertThat(loan.getReturnDate()).isNull();
         }
     }
@@ -350,10 +354,10 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee();
+            Money fee = loan.calculateOverdueFee();
 
             // then
-            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(fee).isEqualTo(Money.zero());
         }
 
         @Test
@@ -369,11 +373,11 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee();
+            Money fee = loan.calculateOverdueFee();
 
             // then - 4일 ~ 5일 사이의 연체료 (4000 ~ 5000원)
-            assertThat(fee).isGreaterThanOrEqualTo(new BigDecimal("4000"));
-            assertThat(fee).isLessThanOrEqualTo(new BigDecimal("5000"));
+            assertThat(fee.getAmount()).isGreaterThanOrEqualTo(new BigDecimal("4000"));
+            assertThat(fee.getAmount()).isLessThanOrEqualTo(new BigDecimal("5000"));
         }
 
         @Test
@@ -389,11 +393,11 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee();
+            Money fee = loan.calculateOverdueFee();
 
             // then - 0일 ~ 1일 사이의 연체료 (0 ~ 1000원)
-            assertThat(fee).isGreaterThanOrEqualTo(BigDecimal.ZERO);
-            assertThat(fee).isLessThanOrEqualTo(new BigDecimal("1000"));
+            assertThat(fee.getAmount()).isGreaterThanOrEqualTo(BigDecimal.ZERO);
+            assertThat(fee.getAmount()).isLessThanOrEqualTo(new BigDecimal("1000"));
         }
 
         @Test
@@ -409,10 +413,10 @@ class LoanTest {
                     .build();
 
             // when
-            BigDecimal fee = loan.calculateOverdueFee();
+            Money fee = loan.calculateOverdueFee();
 
             // then
-            assertThat(fee).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(fee).isEqualTo(Money.zero());
         }
     }
 
@@ -437,7 +441,7 @@ class LoanTest {
             // then
             assertThat(loan.getReturnDate()).isNotNull();
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(loan.getOverdueFee().getAmount).isEqualTo(Money.zero());
         }
 
         @Test
@@ -458,7 +462,7 @@ class LoanTest {
             // then
             assertThat(loan.getReturnDate()).isNotNull();
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-            assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(loan.getOverdueFee().getAmount()).isGreaterThan(BigDecimal.ZERO);
         }
 
         @Test
@@ -641,7 +645,7 @@ class LoanTest {
 
             // then
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
-            assertThat(loan.getOverdueFee()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(loan.getOverdueFee()).isEqualTo(Money.zero());
         }
 
         @Test
@@ -661,7 +665,7 @@ class LoanTest {
 
             // then
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.OVERDUE);
-            assertThat(loan.getOverdueFee()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(loan.getOverdueFee().getAmount()).isGreaterThan(BigDecimal.ZERO);
         }
 
         @Test
@@ -695,7 +699,7 @@ class LoanTest {
                     .dueDate(LocalDateTime.now().plusDays(4))
                     .returnDate(LocalDateTime.now())
                     .status(LoanStatus.OVERDUE)
-                    .overdueFee(new BigDecimal("5000"))
+                    .overdueFee(Money.of(5000))
                     .build();
 
             // when

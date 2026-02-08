@@ -23,6 +23,12 @@ public class Member {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private Role role;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "membership_type")
     private MembershipType membershipType;
@@ -30,4 +36,11 @@ public class Member {
     @Column(name = "join_date")
     private LocalDateTime joinDate;
 
+    public MembershipType upgradeMembership(MembershipType targetType) {
+        return targetType;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

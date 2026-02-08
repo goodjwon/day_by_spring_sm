@@ -1,7 +1,7 @@
 package com.example.spring.entity;
 
+import com.example.spring.domain.vo.Address;
 import com.example.spring.exception.DeliveryException;
-import com.example.spring.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,12 +34,13 @@ public class Delivery {
     @Column(nullable = false)
     private String phoneNumber;
 
+
     private String zipCode;
 
     @Column(nullable = false)
-    private String address;
+    private Address deliveryAddress;
 
-    private String addressDetail;
+    private Address addressDetail;
 
     @Column(length = 500)
     private String deliveryMemo;
@@ -103,8 +104,40 @@ throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리�
         this.status = DeliveryStatus.RETURNED;
         this.deliveredDate = null;
     }
-
     public boolean canChangeAddress() {
         return status == DeliveryStatus.PREPARING;
+    }
+    public void startShipping(String trackingNumber, String courierCompany) {
+        transit();
+        this.trackingNumber = trackingNumber;
+        this.courierCompany = courierCompany;
+    }
+    public void complete() {
+        outForDelivery();
+    }
+    public void updateStatus(DeliveryStatus status) {
+        this.status = status;
+    }
+    public boolean isDelivered(){
+        return this.status == DeliveryStatus.DELIVERED;
+    }
+    public boolean isFailed(){
+        return this.status == DeliveryStatus.FAILED;
+    }
+    public boolean isReturned(){
+        return this.status == DeliveryStatus.RETURNED;
+    }
+    public String getFullAddress(){
+        return deliveryAddress.getFullAddress();
+    }
+    public String getDeliveryAddress() {
+        return deliveryAddress.getAddress();
+    }
+    public void changeAddress(Address address) {
+        this.deliveryAddress = address;
+    }
+
+    public void changeAddress(String zipCode, String address, String addressDetail) {
+        deliveryAddress = Address.of(zipCode, address, addressDetail);
     }
 }

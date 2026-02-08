@@ -1,5 +1,7 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.entity.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,8 +43,8 @@ public class OrderRepositoryTest {
         Book book = Book.builder()
                 .title(title)
                 .author(author)
-                .price(price)
-                .isbn("ISBN" + (System.nanoTime() % 1000000000L) + (++isbnCounter))
+                .price(Money.of(price))
+                .isbn(ISBN.of("ISBN" + (System.nanoTime() % 1000000000L) + (++isbnCounter)))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -55,7 +57,7 @@ public class OrderRepositoryTest {
         Member member = createAndSaveMember("Tester", "test@test.com");
         Order newOrder = Order.builder()
                 .member(member)
-                .totalAmount(new BigDecimal("10000"))
+                .totalAmount(Money.of(new BigDecimal("10000")))
                 .orderDate(LocalDateTime.now())
                 .build();
 
@@ -77,7 +79,7 @@ public class OrderRepositoryTest {
 
         Order order = Order.builder()
                 .member(member)
-                .totalAmount(new BigDecimal("10000"))
+                .totalAmount(Money.of(new BigDecimal("10000")))
                 .orderDate(LocalDateTime.now())
                 .build();
 
@@ -108,7 +110,7 @@ public class OrderRepositoryTest {
         Order savedOrder = entityManager.persist(
                 Order.builder()
                         .member(member)
-                        .totalAmount(new BigDecimal("10000"))
+                        .totalAmount(Money.of(new BigDecimal("10000")))
                         .orderDate(LocalDateTime.now())
                         .build()
         );
@@ -119,7 +121,7 @@ public class OrderRepositoryTest {
 
         // Then
         assertThat(foundOrder).isPresent();
-        assertThat(foundOrder.get().getTotalAmount()).isEqualByComparingTo(new BigDecimal("10000"));
+        assertThat(foundOrder.get().getTotalAmount()).isEqualToComparingFieldByField(new BigDecimal("10000"));
     }
 
     @Test
@@ -138,14 +140,14 @@ public class OrderRepositoryTest {
         entityManager.persist(
                 Order.builder()
                         .member(member)
-                        .totalAmount(new BigDecimal("10000"))
+                        .totalAmount(Money.of(new BigDecimal("10000")))
                         .orderDate(LocalDateTime.now())
                         .build()
         );
         entityManager.persist(
                 Order.builder()
                         .member(member)
-                        .totalAmount(new BigDecimal("20000"))
+                        .totalAmount(Money.of(new BigDecimal("20000")))
                         .orderDate(LocalDateTime.now())
                         .build()
         );
@@ -166,7 +168,7 @@ public class OrderRepositoryTest {
         Order savedOrder = entityManager.persist(
                 Order.builder()
                         .member(member)
-                        .totalAmount(new BigDecimal("10000"))
+                        .totalAmount(Money.of(new BigDecimal("10000")))
                         .orderDate(LocalDateTime.now())
                         .build()
         );
@@ -177,7 +179,7 @@ public class OrderRepositoryTest {
 
         // Then
         assertThat(foundOrder).isNotNull();
-        assertThat(foundOrder.getTotalAmount()).isEqualByComparingTo(new BigDecimal("10000"));
+        assertThat(foundOrder.getTotalAmount()).isEqualToComparingFieldByField(new BigDecimal("10000"));
     }
 
     @Test
@@ -203,7 +205,7 @@ public class OrderRepositoryTest {
 
             Order pendingOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -211,7 +213,7 @@ public class OrderRepositoryTest {
 
             Order confirmedOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("20000"))
+                    .totalAmount(Money.of(new BigDecimal("20000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.CONFIRMED)
                     .build();
@@ -234,7 +236,7 @@ public class OrderRepositoryTest {
 
             Order shippedOrder1 = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("15000"))
+                    .totalAmount(Money.of(new BigDecimal("15000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.SHIPPED)
                     .build();
@@ -242,7 +244,7 @@ public class OrderRepositoryTest {
 
             Order shippedOrder2 = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("25000"))
+                    .totalAmount(Money.of(new BigDecimal("25000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.SHIPPED)
                     .build();
@@ -265,7 +267,7 @@ public class OrderRepositoryTest {
 
             Order pendingOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -293,7 +295,7 @@ public class OrderRepositoryTest {
             for (int i = 0; i < 3; i++) {
                 Order order = Order.builder()
                         .member(member)
-                        .totalAmount(new BigDecimal("10000"))
+                        .totalAmount(Money.of(new BigDecimal("10000")))
                         .orderDate(LocalDateTime.now())
                         .status(OrderStatus.PENDING)
                         .build();
@@ -303,7 +305,7 @@ public class OrderRepositoryTest {
             for (int i = 0; i < 2; i++) {
                 Order order = Order.builder()
                         .member(member)
-                        .totalAmount(new BigDecimal("20000"))
+                        .totalAmount(Money.of(new BigDecimal("20000")))
                         .orderDate(LocalDateTime.now())
                         .status(OrderStatus.DELIVERED)
                         .build();
@@ -343,7 +345,7 @@ public class OrderRepositoryTest {
             // 10일 전 주문
             Order oldOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(tenDaysAgo)
                     .status(OrderStatus.DELIVERED)
                     .build();
@@ -352,7 +354,7 @@ public class OrderRepositoryTest {
             // 5일 전 주문
             Order midOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("20000"))
+                    .totalAmount(Money.of(new BigDecimal("20000")))
                     .orderDate(fiveDaysAgo)
                     .status(OrderStatus.SHIPPED)
                     .build();
@@ -361,7 +363,7 @@ public class OrderRepositoryTest {
             // 오늘 주문
             Order recentOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("30000"))
+                    .totalAmount(Money.of(new BigDecimal("30000")))
                     .orderDate(now)
                     .status(OrderStatus.PENDING)
                     .build();
@@ -388,7 +390,7 @@ public class OrderRepositoryTest {
             LocalDateTime tenDaysAgo = LocalDateTime.now().minusDays(10);
             Order oldOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(tenDaysAgo)
                     .status(OrderStatus.DELIVERED)
                     .build();
@@ -419,7 +421,7 @@ public class OrderRepositoryTest {
 
             Order cheapOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("5000"))
+                    .totalAmount(Money.of(new BigDecimal("5000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -427,7 +429,7 @@ public class OrderRepositoryTest {
 
             Order midOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("50000"))
+                    .totalAmount(Money.of(new BigDecimal("50000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -435,7 +437,7 @@ public class OrderRepositoryTest {
 
             Order expensiveOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("200000"))
+                    .totalAmount(Money.of(new BigDecimal("200000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -448,7 +450,7 @@ public class OrderRepositoryTest {
 
             // Then - 50,000원 주문만 조회
             assertThat(orders).hasSize(1);
-            assertThat(orders.get(0).getTotalAmount()).isEqualByComparingTo(new BigDecimal("50000"));
+            assertThat(orders.get(0).getTotalAmount()).isEqualToComparingFieldByField(new BigDecimal("50000"));
         }
 
         @Test
@@ -459,7 +461,7 @@ public class OrderRepositoryTest {
 
             Order exactMinOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -467,7 +469,7 @@ public class OrderRepositoryTest {
 
             Order exactMaxOrder = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("50000"))
+                    .totalAmount(Money.of(new BigDecimal("50000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -490,7 +492,7 @@ public class OrderRepositoryTest {
 
             Order order = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("5000"))
+                    .totalAmount(Money.of(new BigDecimal("5000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -523,7 +525,7 @@ public class OrderRepositoryTest {
             // targetBook이 포함된 주문 1
             Order order1 = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("30000"))
+                    .totalAmount(Money.of(new BigDecimal("30000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -538,7 +540,7 @@ public class OrderRepositoryTest {
             // targetBook이 포함된 주문 2
             Order order2 = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("60000"))
+                    .totalAmount(Money.of(new BigDecimal("60000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.CONFIRMED)
                     .build();
@@ -553,7 +555,7 @@ public class OrderRepositoryTest {
             // otherBook만 포함된 주문
             Order order3 = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("20000"))
+                    .totalAmount(Money.of(new BigDecimal("20000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -587,7 +589,7 @@ public class OrderRepositoryTest {
             Book otherBook = createAndSaveBook("Other", "Other", new BigDecimal("5000"));
             Order order = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("5000"))
+                    .totalAmount(Money.of(new BigDecimal("5000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -619,7 +621,7 @@ public class OrderRepositoryTest {
             // 3권이 포함된 주문
             Order order = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("60000"))
+                    .totalAmount(Money.of(new BigDecimal("60000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.PENDING)
                     .build();
@@ -652,7 +654,7 @@ public class OrderRepositoryTest {
             Member member = createAndSaveMember("Tester", "delete@test.com");
             Order order = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.CANCELLED)
                     .build();
@@ -677,7 +679,7 @@ public class OrderRepositoryTest {
 
             Order order = Order.builder()
                     .member(member)
-                    .totalAmount(new BigDecimal("10000"))
+                    .totalAmount(Money.of(new BigDecimal("10000")))
                     .orderDate(LocalDateTime.now())
                     .status(OrderStatus.CANCELLED)
                     .build();

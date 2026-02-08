@@ -1,5 +1,6 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.Money;
 import com.example.spring.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +44,7 @@ public class PaymentRepositoryTest {
 
         testOrder = Order.builder()
                 .member(testMember)
-                .totalAmount(new BigDecimal("50000"))
+                .totalAmount(Money.of(new BigDecimal("50000")))
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
                 .build();
@@ -56,7 +57,7 @@ public class PaymentRepositoryTest {
                 .order(order)
                 .method(PaymentMethod.CREDIT_CARD)
                 .status(status)
-                .amount(new BigDecimal("50000"))
+                .amount(Money.of(new BigDecimal("50000")))
                 .transactionId(transactionId)
                 .build();
         return entityManager.persistAndFlush(payment);
@@ -76,7 +77,7 @@ public class PaymentRepositoryTest {
                     .order(testOrder)
                     .method(PaymentMethod.CREDIT_CARD)
                     .status(PaymentStatus.PENDING)
-                    .amount(new BigDecimal("50000"))
+                    .amount(Money.of(new BigDecimal("50000")))
                     .build();
 
             // When
@@ -84,7 +85,7 @@ public class PaymentRepositoryTest {
 
             // Then
             assertThat(savedPayment.getId()).isNotNull();
-            assertThat(savedPayment.getAmount()).isEqualByComparingTo(new BigDecimal("50000"));
+            assertThat(savedPayment.getAmount()).isEqualToComparingFieldByField(new BigDecimal("50000"));
             assertThat(savedPayment.getMethod()).isEqualTo(PaymentMethod.CREDIT_CARD);
         }
 
@@ -326,7 +327,7 @@ public class PaymentRepositoryTest {
     private Order createNewOrder() {
         Order order = Order.builder()
                 .member(testMember)
-                .totalAmount(new BigDecimal("30000"))
+                .totalAmount(Money.of(new BigDecimal("30000")))
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
                 .build();

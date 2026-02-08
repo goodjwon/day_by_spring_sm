@@ -1,5 +1,8 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.Address;
+import com.example.spring.domain.vo.Money;
+import com.example.spring.entity.Role;
 import com.example.spring.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,8 +38,8 @@ public class DeliveryRepositoryTest {
         testMember = Member.builder()
                 .name("Test Member")
                 .email("delivery" + (++uniqueCounter) + "@test.com")
-//                .password("password")
-//                .role(Role.USER)
+                .password("password")
+                .role(Role.USER)
                 .membershipType(MembershipType.REGULAR)
                 .joinDate(LocalDateTime.now())
                 .build();
@@ -44,7 +47,7 @@ public class DeliveryRepositoryTest {
 
         testOrder = Order.builder()
                 .member(testMember)
-                .totalAmount(new BigDecimal("50000"))
+                .totalAmount(Money.of(new BigDecimal("50000")))
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
                 .build();
@@ -58,7 +61,7 @@ public class DeliveryRepositoryTest {
                 .order(order)
                 .recipientName(recipientName)
                 .phoneNumber("010-1234-5678")
-                .address("서울시 강남구 테헤란로 123")
+                .address(Address.of("서울시 강남구 테헤란로 123"))
                 .status(status)
                 .trackingNumber(trackingNumber)
                 .courierCompany(courierCompany)
@@ -80,7 +83,7 @@ public class DeliveryRepositoryTest {
                     .order(testOrder)
                     .recipientName("홍길동")
                     .phoneNumber("010-1234-5678")
-                    .address("서울시 강남구")
+                    .address(Address.of("서울시 강남구"))
                     .status(DeliveryStatus.PREPARING)
                     .build();
 
@@ -378,7 +381,7 @@ public class DeliveryRepositoryTest {
     private Order createNewOrder() {
         Order order = Order.builder()
                 .member(testMember)
-                .totalAmount(new BigDecimal("30000"))
+                .totalAmount(Money.of(new BigDecimal("30000")))
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
                 .build();
