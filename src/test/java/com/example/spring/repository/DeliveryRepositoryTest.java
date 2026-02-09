@@ -61,7 +61,7 @@ public class DeliveryRepositoryTest {
                 .order(order)
                 .recipientName(recipientName)
                 .phoneNumber("010-1234-5678")
-                .address(Address.of("서울시 강남구 테헤란로 123"))
+                .deliveryAddress(Address.of("서울시 강남구 테헤란로 123"))
                 .status(status)
                 .trackingNumber(trackingNumber)
                 .courierCompany(courierCompany)
@@ -83,7 +83,7 @@ public class DeliveryRepositoryTest {
                     .order(testOrder)
                     .recipientName("홍길동")
                     .phoneNumber("010-1234-5678")
-                    .address(Address.of("서울시 강남구"))
+                    .deliveryAddress(Address.of("서울시 강남구"))
                     .status(DeliveryStatus.PREPARING)
                     .build();
 

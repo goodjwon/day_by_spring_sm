@@ -402,7 +402,7 @@ class DeliveryServiceImplTest {
             // When & Then
             assertThatThrownBy(() -> deliveryService.changeAddress(1L, "12345", "서울시 강북구", "101동"))
                     .isInstanceOf(DeliveryException.AddressChangeNotAllowedException.class)
-                    .hasMessageContaining("배송 준비중일 때만");
+                    .hasMessageContaining("배송 준비중일 때만 변경 가능합니다");
         }
 
         @Test
