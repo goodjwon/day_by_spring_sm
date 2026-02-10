@@ -110,7 +110,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new DeliveryException.DeliveryNotFoundException(deliveryId));
         if (!(delivery.getStatus() == DeliveryStatus.IN_TRANSIT)) {
-            throw new DeliveryException.AddressChangeNotAllowedException("배송 준비중일 때만 변경 가능합니다");
+        log.info("배송지 주소 변경 요청 -  ID: {}", deliveryId);
         }
         log.info("배송지 주소 변경 완료 - ID: {}", deliveryId);
         return null;
