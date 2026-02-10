@@ -58,14 +58,14 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
+    @Transactional
+    @Override
     public DeliveryResponse startShipping(Long deliveryId, String trackingNumber,
                                           String courierCompany) {
         log.info("배송 시작 요청 - ID: {}, 운송장 번호: {}, 배송사: {}", deliveryId, trackingNumber, courierCompany);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new DeliveryException.DeliveryNotFoundException(deliveryId));
-        if (!(delivery.getStatus() == DeliveryStatus.IN_TRANSIT)) {
-            throw new DeliveryException.InvalidDeliveryStateException(deliveryId, DeliveryStatus.IN_TRANSIT);
-        }
+        delivery.startShipping(trackingNumber, courierCompany);
         log.info("배송 시작 - ID: {}", deliveryId);
         return DeliveryResponse.from(delivery);
     }
