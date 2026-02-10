@@ -52,9 +52,9 @@ public class DeliveryServiceImpl implements DeliveryService {
     public List<DeliveryResponse> findByStatus(DeliveryStatus status) {
         log.info("상태별 배송 목록 조회 요청 - status: {}", status);
         List<Delivery> deliveryList = deliveryRepository.findByStatus(status);
-        DeliveryResponse response = DeliveryResponse.from((Delivery) deliveryList);
-        log.info("상태별 배송 목록 조회 완료 - status: {}", status);
-        return List.of(response);
+        return deliveryList.stream()
+                .map(DeliveryResponse::from)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
