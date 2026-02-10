@@ -71,13 +71,13 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
+    @Transactional
+    @Override
     public DeliveryResponse completeDelivery(Long deliveryId) {
         log.info("배송 완료 요청 - ID: {}", deliveryId);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new DeliveryException.DeliveryNotFoundException(deliveryId));
-        if (!(delivery.getStatus() == DeliveryStatus.PREPARING)) {
-            throw new DeliveryException.InvalidDeliveryStateException(deliveryId, DeliveryStatus.PREPARING);
-        }
+        delivery.delivered();
         log.info("배송 완료 - ID: {}", deliveryId);
         return DeliveryResponse.from(delivery);
     }
