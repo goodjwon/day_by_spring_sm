@@ -126,6 +126,6 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
         delivery.setZipCode(newZipCode);
         delivery.setDeliveryAddress(newAddress);
-        delivery.setDeliveryAddress(newAddressDetails);
+        delivery.setAddressDetail(newAddressDetails);
     }
 }
