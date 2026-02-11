@@ -33,6 +33,7 @@ public class DeliveryResponse {
                 .address(delivery.getDeliveryAddress())
                 .addressDetail(delivery.getAddressDetail())
                 .trackingNumber(delivery.getTrackingNumber())
+                .courierCompany(delivery.getCourierCompany())
                 .build();
     }
 }

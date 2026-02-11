@@ -1,5 +1,7 @@
 package com.example.spring.controller;
 
+import com.example.spring.domain.vo.ISBN;
+import com.example.spring.domain.vo.Money;
 import com.example.spring.dto.request.CreateBookRequest;
 import com.example.spring.dto.request.UpdateBookRequest;
 import com.example.spring.dto.response.BookResponse;
@@ -47,8 +49,8 @@ public class BookControllerTest {
                 .id(1L)
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45000"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45000")))
                 .available(true)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -67,8 +69,8 @@ public class BookControllerTest {
         createBookRequest = CreateBookRequest.builder()
                 .title("Clean Code")
                 .author("Robert C. Martin")
-                .isbn("9780132350884")
-                .price(new BigDecimal("45000"))
+                .isbn(ISBN.of("9780132350884"))
+                .price(Money.of(new BigDecimal("45000")))
                 .available(true)
                 .build();
 
@@ -114,8 +116,8 @@ public class BookControllerTest {
             CreateBookRequest invalidRequest = CreateBookRequest.builder()
                     .title(null)
                     .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45000"))
+                    .isbn(ISBN.of("9780132350884"))
+                    .price(Money.of(new BigDecimal("45000")))
                     .available(true)
                     .build();
             // When & Then
@@ -136,8 +138,8 @@ public class BookControllerTest {
             CreateBookRequest invalidRequest = CreateBookRequest.builder()
                     .title(null)
                     .author("Robert C. Martin")
-                    .isbn("97801323508Cd")
-                    .price(new BigDecimal("45000"))
+                    .isbn(ISBN.of("97801323508Cd"))
+                    .price(Money.of(new BigDecimal("45000")))
                     .available(true)
                     .build();
             //When&Then
@@ -206,7 +208,7 @@ public class BookControllerTest {
         void getBookByIsbn_존재하는ISBN_조회성공() throws Exception {
             //Given
             Book testBook1 = testBook;
-            given(bookService.getBookByIsbn(testBook1.getIsbn())).willReturn(Optional.of(testBook1));
+            given(bookService.getBookByIsbn(testBook1.getIsbn().getValue())).willReturn(Optional.of(testBook1));
 
             //When&Then
             mockMvc.perform(get("/api/v1/books/isbn/{isbn}", testBook1.getIsbn())
@@ -217,7 +219,7 @@ public class BookControllerTest {
                     .andExpect(jsonPath("$.id").value(1L))
                     .andExpect(jsonPath("$.isbn").value(testBook1.getIsbn()));
 
-            verify(bookService).getBookByIsbn(testBook1.getIsbn());
+            verify(bookService).getBookByIsbn(testBook1.getIsbn().getValue());
         }
 
         @Test
@@ -247,8 +249,8 @@ public class BookControllerTest {
             Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort));
 
             List<Book> content = List.of(
-                    Book.builder().id(1L).title("Book 1").author("Author A").isbn("111").build(),
-                    Book.builder().id(2L).title("Book 2").author("Author B").isbn("222").build()
+                    Book.builder().id(1L).title("Book 1").author("Author A").isbn(ISBN.of("111")).build(),
+                    Book.builder().id(2L).title("Book 2").author("Author B").isbn(ISBN.of("222")).build()
             );
 
             long totalElements = 20L;
@@ -393,8 +395,8 @@ public class BookControllerTest {
                     .id(bookId)
                     .title("Clean Code")
                     .author("Robert C. Martin")
-                    .isbn("9780132350884")
-                    .price(new BigDecimal("45000"))
+                    .isbn(ISBN.of("978013235088432350884"))
+                    .price(Money.of(new BigDecimal("45000")))
                     .available(newStatus)
                     .build();
             given(bookService.updateBookAvailability(bookId, newStatus)).willReturn(updateBook);

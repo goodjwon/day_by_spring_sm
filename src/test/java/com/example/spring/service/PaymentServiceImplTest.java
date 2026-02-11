@@ -86,6 +86,18 @@ class PaymentServiceImplTest {
     }
 
     @Test
+    void findById_실패_존재하지않음() {
+        //Given
+        Long paymentId = 999L;
+        when(paymentRepository.findById(paymentId)).thenReturn(Optional.empty());
+
+        //When & Then
+        assertThatThrownBy(() -> paymentService.findById(paymentId))
+                .isInstanceOf(PaymentException.PaymentNotFoundException.class)
+                .hasMessageContaining("결재 정보를 찾을 수 없습니다");
+    }
+
+    @Test
     void findByStatus_성공() {
         // Given
         PaymentStatus status = PaymentStatus.PENDING;
@@ -98,6 +110,21 @@ class PaymentServiceImplTest {
         // Then
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).getStatus()).isEqualTo(status);
+        verify(paymentRepository).findByStatus(status);
+    }
+
+    @Test
+    void findByStatus_실패_빈리스트() {
+        //Given
+        PaymentStatus status = PaymentStatus.PENDING;
+        Payment payment = createTestPayment(null, 1L, status);
+        when(paymentRepository.findByStatus(status)).thenReturn(List.of(payment));
+
+        //When
+        List<PaymentResponse> responses = paymentService.findByStatus(status);
+
+        //Then
+        assertThat(responses).isEmpty();
         verify(paymentRepository).findByStatus(status);
     }
 
@@ -185,7 +212,7 @@ class PaymentServiceImplTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.REFUNDED); // 전액 환불 시 REFUNDED
-        assertThat(response.getRefundedAmount()).isEqualByComparingTo(amount);
+        assertThat(response.getRefundedAmount()).isEqualToComparingFieldByField(amount);
         verify(paymentRepository).save(payment);
     }
 
@@ -205,7 +232,7 @@ class PaymentServiceImplTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.PARTIAL_REFUNDED); // 부분 환불 시 PARTIAL_REFUNDED
-        assertThat(response.getRefundedAmount()).isEqualByComparingTo(refundAmount);
+        assertThat(response.getRefundedAmount()).isEqualToComparingFieldByField(refundAmount);
         verify(paymentRepository).save(payment);
     }
 

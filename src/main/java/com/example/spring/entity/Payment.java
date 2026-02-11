@@ -66,6 +66,11 @@ public class Payment {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
+    public Payment(Long id, Money amount) {
+        this.id = id;
+        this.amount = amount;
+    }
+
     // todo. 1월. 24일 과제.
     // onCreate
     @PrePersist

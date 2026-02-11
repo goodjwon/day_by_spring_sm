@@ -52,32 +52,32 @@ public class DeliveryServiceImpl implements DeliveryService {
     public List<DeliveryResponse> findByStatus(DeliveryStatus status) {
         log.info("상태별 배송 목록 조회 요청 - status: {}", status);
         List<Delivery> deliveryList = deliveryRepository.findByStatus(status);
-        return deliveryList.stream()
-                .map(DeliveryResponse::from)
-                .collect(java.util.stream.Collectors.toList());
+        DeliveryResponse response = DeliveryResponse.from((Delivery) deliveryList);
+        log.info("상태별 배송 목록 조회 완료 - status: {}", status);
+        return List.of(response);
     }
 
-    @Override
-    @Transactional
     @Override
     public DeliveryResponse startShipping(Long deliveryId, String trackingNumber,
                                           String courierCompany) {
         log.info("배송 시작 요청 - ID: {}, 운송장 번호: {}, 배송사: {}", deliveryId, trackingNumber, courierCompany);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new DeliveryException.DeliveryNotFoundException(deliveryId));
-        delivery.startShipping(trackingNumber, courierCompany);
+        if (!(delivery.getStatus() == DeliveryStatus.IN_TRANSIT)) {
+            throw new DeliveryException.InvalidDeliveryStateException(deliveryId, DeliveryStatus.IN_TRANSIT);
+        }
         log.info("배송 시작 - ID: {}", deliveryId);
         return DeliveryResponse.from(delivery);
     }
 
     @Override
-    @Transactional
-    @Override
     public DeliveryResponse completeDelivery(Long deliveryId) {
         log.info("배송 완료 요청 - ID: {}", deliveryId);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new DeliveryException.DeliveryNotFoundException(deliveryId));
-        delivery.delivered();
+        if (!(delivery.getStatus() == DeliveryStatus.PREPARING)) {
+            throw new DeliveryException.InvalidDeliveryStateException(deliveryId, DeliveryStatus.PREPARING);
+        }
         log.info("배송 완료 - ID: {}", deliveryId);
         return DeliveryResponse.from(delivery);
     }
@@ -110,7 +110,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new DeliveryException.DeliveryNotFoundException(deliveryId));
         if (!(delivery.getStatus() == DeliveryStatus.IN_TRANSIT)) {
-        log.info("배송지 주소 변경 요청 -  ID: {}", deliveryId);
+            throw new DeliveryException.AddressChangeNotAllowedException("배송 준비중일 때만 변경 가능합니다");
         }
         log.info("배송지 주소 변경 완료 - ID: {}", deliveryId);
         return null;
@@ -126,6 +126,6 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
         delivery.setZipCode(newZipCode);
         delivery.setDeliveryAddress(newAddress);
-        delivery.setAddressDetail(newAddressDetails);
+        delivery.setDeliveryAddress(newAddressDetails);
     }
 }
