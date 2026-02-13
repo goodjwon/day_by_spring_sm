@@ -9,6 +9,7 @@ import com.example.spring.exception.RefundException;
 import com.example.spring.repository.OrderRepository;
 import com.example.spring.repository.RefundRepository;
 import com.example.spring.service.impl.RefundServiceImpl;
+import lombok.Builder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+@Builder
 @ExtendWith(MockitoExtension.class)
 @DisplayName("RefundServiceImpl 테스트")
 class RefundServiceImplTest {
