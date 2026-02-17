@@ -53,7 +53,7 @@ public class BookServiceImpl implements BookService {
         if (request.getPrice() == null || request.getPrice().compareTo(Money.ZERO) < 0) {
             throw new BookException.InvalidBookDataException("가격은 0 이상이어야 합니다");
         }
-        if (bookRepository.existsByIsbn(request.getIsbn().getValue())) {
+        if (bookRepository.existsByIsbn(request.getIsbn())) {
             throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다");
         }
 
@@ -67,7 +67,7 @@ public class BookServiceImpl implements BookService {
 
         Book savedBook = bookRepository.save(book);
 
-        // eventPublisher.publishEvent(savedBook); // 이벤트 발행 로직 (필요시 활성화)
+        eventPublisher.publishEvent(savedBook); // 이벤트 발행 로직 (필요시 활성화)
 
         log.info("도서 생성 완료 - ID : {}", savedBook.getId());
 
@@ -85,7 +85,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<Book> getBookByIsbn(String isbn) {
+    public Optional<Book> getBookByIsbn(ISBN isbn) {
         return bookRepository.findByISBN(isbn);
     }
 
@@ -109,7 +109,7 @@ public class BookServiceImpl implements BookService {
         }
 
         if (!existingBook.getIsbn().equals(request.getIsbn()) &&
-                bookRepository.existsByIsbn(request.getIsbn())) {
+                bookRepository.existsByIsbn(ISBN.of(request.getIsbn()))) {
             throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + request.getIsbn());
         }
 
@@ -217,7 +217,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public boolean isIsbnExists(String isbn) {
+    public boolean isIsbnExists(ISBN isbn) {
         return bookRepository.existsByIsbn(isbn);
     }
 

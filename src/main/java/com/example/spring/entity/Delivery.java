@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "deliveries")
@@ -39,7 +40,6 @@ public class Delivery {
 
     @Column(nullable = false)
     private Address deliveryAddress;
-
     private Address addressDetail;
 
     @Column(length = 500)
@@ -59,8 +59,6 @@ public class Delivery {
     private LocalDateTime updatedDate;
 
 
-    //todo 1.26 메서두 추가하기 과제.
-    // onCreate\
     @PrePersist
     protected  void onCreate(){
         createdDate = LocalDateTime.now();
@@ -113,7 +111,11 @@ throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리�
         this.courierCompany = courierCompany;
     }
     public void complete() {
-        outForDelivery();
+        if (!DeliveryStatus.IN_TRANSIT.equals(status)) {
+            throw new DeliveryException.InvalidDeliveryStateException("배송 중인 상태에서만 가능합니다. 현재 상태: " + this.status);
+        }
+        this.status = DeliveryStatus.DELIVERED;
+        this.deliveredDate = LocalDateTime.now();
     }
     public void updateStatus(DeliveryStatus status) {
         this.status = status;
@@ -138,6 +140,9 @@ throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리�
     }
 
     public void changeAddress(String zipCode, String address, String addressDetail) {
-        deliveryAddress = Address.of(zipCode, address, addressDetail);
+        if (!DeliveryStatus.PREPARING.equals(status)) {
+            throw new DeliveryException.AddressChangeNotAllowedException("배송 준비중일 때만 주소를 변경");
+        }
+        this.deliveryAddress = Address.of(zipCode + address + addressDetail);
     }
 }

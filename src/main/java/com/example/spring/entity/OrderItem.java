@@ -35,11 +35,19 @@ public class OrderItem {
 
     private Money totalPrice;
 
-    public void changeQuantity(int quantity) {
+    public OrderItem(Integer quantity, Money price, Money totalPrice) {
+        this.quantity = quantity;
+        this.price = price;
+        this.totalPrice = totalPrice;
+    }
+
+    public void changeQuantity(Integer quantity) {
+        this.quantity = quantity;
         totalPrice = price.multiply(quantity);
     }
 
     public void updatePrice(Money price) {
         this.price = price;
+        totalPrice = price.multiply(quantity);
     }
 }

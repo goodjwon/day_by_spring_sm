@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BookController.class)
+@ActiveProfiles("test")
 public class BookControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -208,7 +210,7 @@ public class BookControllerTest {
         void getBookByIsbn_존재하는ISBN_조회성공() throws Exception {
             //Given
             Book testBook1 = testBook;
-            given(bookService.getBookByIsbn(testBook1.getIsbn().getValue())).willReturn(Optional.of(testBook1));
+            given(bookService.getBookByIsbn(ISBN.of(testBook1.getIsbn().getValue()))).willReturn(Optional.of(testBook1));
 
             //When&Then
             mockMvc.perform(get("/api/v1/books/isbn/{isbn}", testBook1.getIsbn())
@@ -219,7 +221,7 @@ public class BookControllerTest {
                     .andExpect(jsonPath("$.id").value(1L))
                     .andExpect(jsonPath("$.isbn").value(testBook1.getIsbn()));
 
-            verify(bookService).getBookByIsbn(testBook1.getIsbn().getValue());
+            verify(bookService).getBookByIsbn(ISBN.of(testBook1.getIsbn().getValue()));
         }
 
         @Test
@@ -227,14 +229,14 @@ public class BookControllerTest {
         void getBookByIsbn_존재하는않는ISBN_404에러() throws Exception {
             //Given
             String bookIsbn = "0000000000000";
-            given(bookService.getBookByIsbn(bookIsbn)).willReturn(Optional.empty());
+            given(bookService.getBookByIsbn(ISBN.of(bookIsbn))).willReturn(Optional.empty());
             //When&Then
             mockMvc.perform(get("/api/v1/books/isbn/{isbn}", bookIsbn)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andDo(print())
                     .andExpect(status().isNotFound());
 
-            verify(bookService).getBookByIsbn(bookIsbn);
+            verify(bookService).getBookByIsbn(ISBN.of(bookIsbn));
         }
 
         @Test
@@ -466,7 +468,7 @@ public class BookControllerTest {
         @DisplayName("ISBN 중복 확인")
         void validateIsbn_중복확인_성공() throws Exception {
             // Given
-            given(bookService.isIsbnExists("9780132350884")).willReturn(true);
+            given(bookService.isIsbnExists(ISBN.of("9780132350884"))).willReturn(true);
 
             // When & Then
             mockMvc.perform(get("/api/books/validate/isbn")
@@ -475,7 +477,7 @@ public class BookControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().string("true"));
 
-            verify(bookService).isIsbnExists("9780132350884");
+            verify(bookService).isIsbnExists(ISBN.of("9780132350884"));
         }
     }
 

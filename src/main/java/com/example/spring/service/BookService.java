@@ -1,5 +1,6 @@
 package com.example.spring.service;
 
+import com.example.spring.domain.vo.ISBN;
 import com.example.spring.dto.request.CreateBookRequest;
 import com.example.spring.dto.request.UpdateBookRequest;
 import com.example.spring.dto.response.BookResponse;
@@ -36,7 +37,7 @@ public interface BookService {
      * @param isbn 도서 ISBN
      * @return 도서 정보
      */
-    Optional<Book> getBookByIsbn(String isbn);
+    Optional<Book> getBookByIsbn(ISBN isbn);
 
     /**
      * 모든 활성 도서 조회 (페이징)
@@ -123,7 +124,7 @@ public interface BookService {
      * @param isbn 검증할 ISBN
      * @return 중복 여부
      */
-    boolean isIsbnExists(String isbn);
+    boolean isIsbnExists(ISBN isbn);
 
     /**
      * 도서 재고 업데이트

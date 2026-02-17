@@ -1,5 +1,6 @@
 package com.example.spring.repository;
 
+import com.example.spring.domain.vo.ISBN;
 import com.example.spring.entity.Book;
 import com.example.spring.entity.Member;
 import com.example.spring.entity.MembershipType;
@@ -16,8 +17,8 @@ public interface BookRepository {
     void deleteById(Long id);
 
     // ISBN 관련 메서드
-    Optional<Book> findByISBN(String isbn);
-    boolean existsByIsbn(String isbn);
+    Optional<Book> findByISBN(ISBN isbn);
+    boolean existsByIsbn(ISBN isbn);
 
     // 제목/저자 검색 메서드
     List<Book> findByTitleContaining(String title);

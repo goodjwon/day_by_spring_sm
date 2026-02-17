@@ -1,5 +1,6 @@
 package com.example.spring.controller;
 
+import com.example.spring.domain.vo.ISBN;
 import com.example.spring.dto.request.CreateBookRequest;
 import com.example.spring.dto.request.UpdateBookRequest;
 import com.example.spring.dto.response.BookResponse;
@@ -118,7 +119,7 @@ public class BookController {
      * ISBN으로 도서 조회 (GET /api/v1/books/isbn/{isbn})
      */
     @GetMapping("/isbn/{isbn}")
-    public ResponseEntity<BookResponse> getBookByIsbn(@PathVariable String isbn) {
+    public ResponseEntity<BookResponse> getBookByIsbn(@PathVariable ISBN isbn) {
         log.info("ISBN으로 도서 조회 요청 - ISBN: {}", isbn);
         Optional<Book> bookOpt = bookService.getBookByIsbn(isbn);
         return bookOpt.map(book -> ResponseEntity.ok(BookResponse.from(book)))
@@ -219,7 +220,7 @@ public class BookController {
      * ISBN 중복 확인 (GET /api/v1/books/validate/isbn)
      */
     @GetMapping("/validate/isbn")
-    public ResponseEntity<Boolean> validateIsbn(@RequestParam String isbn) {
+    public ResponseEntity<Boolean> validateIsbn(@RequestParam ISBN isbn) {
         boolean exists = bookService.isIsbnExists(isbn);
         return ResponseEntity.ok(exists);
     }

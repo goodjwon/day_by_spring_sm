@@ -2,6 +2,7 @@ package com.example.spring.entity;
 
 import com.example.spring.domain.vo.Money;
 import com.example.spring.exception.OrderException;
+import com.example.spring.exception.PaymentException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -74,50 +75,69 @@ public class Payment {
     // todo. 1월. 24일 과제.
     // onCreate
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdDate = LocalDateTime.now();
         updatedDate = LocalDateTime.now();
     }
+
     // onUpdate
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedDate = LocalDateTime.now();
     }
+
     // complete
-    public void complete(String s){
+    public void complete(String s) {
         if (status != PaymentStatus.PENDING) {
-throw new OrderException.InvalidOrderStateException("결제를 완료할 수 없는 상태입니다. 현재 상태: " + this.status);
+            throw new OrderException.InvalidOrderStateException("결제를 완료할 수 없는 상태입니다. 현재 상태: " + this.status);
         }
         this.status = PaymentStatus.COMPLETED;
+        this.transactionId = s;
         this.paymentDate = LocalDateTime.now();
     }
+
     // fail
-    public void fail(String reason){
+    public void fail(String reason) {
         this.status = PaymentStatus.FAILED;
         this.failureReason = reason;
         this.failedDate = LocalDateTime.now();
     }
+
     // cancel
-    public void cancel(){
+    public void cancel() {
+        if (status != PaymentStatus.COMPLETED) {
+            throw new PaymentException.InvalidPaymentStateException("완료된 결제만 취소");
+        }
         this.status = PaymentStatus.CANCELLED;
         this.cancelledDate = LocalDateTime.now();
     }
+
     // refund
-    public void refund(Money amount){
+    public void refund(Money amount) {
+        if (status != PaymentStatus.COMPLETED) {
+            throw new PaymentException.InvalidPaymentStateException("완료된 결제만 환불");
+        }
         this.refundedAmount = amount;
         this.refundedDate = LocalDateTime.now();
+        this.status = PaymentStatus.REFUNDED;
     }
+
     //partialRefund
-    public void partialRefund(Money amount){
+    public void partialRefund(Money amount) {
+        if (refundedAmount == Money.ZERO) {
+            this.status = PaymentStatus.REFUNDED;
+        }
         this.refundedAmount = amount;
         this.refundedDate = LocalDateTime.now();
+        this.status = PaymentStatus.PARTIAL_REFUNDED;
     }
+
     // isCompleted
-    public boolean isCompleted(){
+    public boolean isCompleted() {
         return this.status == PaymentStatus.COMPLETED;
     }
 
     public boolean isRefundable() {
-        return this.status == PaymentStatus.COMPLETED;
+        return this.status == PaymentStatus.COMPLETED || this.status == PaymentStatus.PARTIAL_REFUNDED;
     }
 }

@@ -2,6 +2,7 @@ package com.example.spring.entity;
 
 
 import com.example.spring.domain.vo.Money;
+import com.example.spring.exception.RefundException;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -68,44 +69,49 @@ public class Refund {
         this.requestDate = LocalDateTime.now();
     }
 
-    public void complete(){
-        this.status = RefundStatus.COMPLETED;
-        this.completedDate = LocalDateTime.now();
-    }
-
     public void complete(String transactionId){
+        if (!RefundStatus.PROCESSING.equals(status)) {
+            throw new RefundException.InvalidRefundStateException("처리중인 환불만 완료");
+        }
         this.status = RefundStatus.COMPLETED;
+        this.refundTransactionId = transactionId;
         this.completedDate = LocalDateTime.now();
-    }
-
-    public void reject(String reason){
-        this.status = RefundStatus.REJECTED;
-        this.rejectedDate = LocalDateTime.now();
-        this.reason = reason;
     }
 
     public void reject(String rejecter, String rejectionReason) {
-        this.requestedBy = rejecter;
-        reject(rejectionReason);
+        if (!RefundStatus.REQUESTED.equals(status)) {
+            throw new RefundException.InvalidRefundStateException("요청된 환불만 거부");
+        }
+        this.status = RefundStatus.REJECTED;
+        this.rejectedBy = rejecter;
+        this.rejectionReason = rejectionReason;
+        this.rejectedDate = LocalDateTime.now();
     }
 
     public void approve(String approver){
+        if (!RefundStatus.REQUESTED.equals(status)) {
+            throw new RefundException.InvalidRefundStateException("요청된 환불만 승인");
+        }
         this.status = RefundStatus.APPROVED;
+        this.approvedBy = approver;
         this.approvedDate = LocalDateTime.now();
     }
 
-    public void fail(String reason) {
-        this.reason = reason;
-        this.updatedDate = LocalDateTime.now();
+    public void fail(String memo) {
+        this.status = RefundStatus.FAILED;
+        this.processingMemo = memo;
     }
 
     public void startProcessing() {
+        if (!RefundStatus.APPROVED.equals(status)) {
+            throw new RefundException.InvalidRefundStateException("승인된 환불만 처리를 시작");
+        }
         this.status = RefundStatus.PROCESSING;
         this.requestDate = LocalDateTime.now();
     }
 
     public boolean canCancel() {
-        return this.status == RefundStatus.REQUESTED;
+        return this.status == RefundStatus.REQUESTED || this.status == RefundStatus.APPROVED;
     }
 
     public boolean isCompleted(){

@@ -97,7 +97,7 @@ public class BookServiceTest {
         @DisplayName("정상적인 도서 생성")
         void createBook_유효한도서_생성성공() {
             // Given
-            given(bookRepository.existsByIsbn(createBookRequest.getIsbn().getValue())).willReturn(false);
+            given(bookRepository.existsByIsbn(ISBN.of(createBookRequest.getIsbn().getValue()))).willReturn(false);
             given(bookRepository.save(any(Book.class))).willReturn(savedBook);
 
             // When
@@ -109,7 +109,7 @@ public class BookServiceTest {
             assertThat(result.getTitle()).isEqualTo("Clean Code");
             assertThat(result.getIsbn()).isEqualTo("9780132350884");
 
-            verify(bookRepository).existsByIsbn(createBookRequest.getIsbn().getValue());
+            verify(bookRepository).existsByIsbn(ISBN.of(createBookRequest.getIsbn().getValue()));
             verify(bookRepository).save(any(Book.class));
         }
 
@@ -117,14 +117,14 @@ public class BookServiceTest {
         @DisplayName("중복 ISBN으로 도서 생성 실패")
         void createBook_중복ISBN_예외발생() {
             // Given
-            given(bookRepository.existsByIsbn(createBookRequest.getIsbn().getValue())).willReturn(true);
+            given(bookRepository.existsByIsbn(ISBN.of(createBookRequest.getIsbn().getValue()))).willReturn(true);
 
             // When & Then
             assertThatThrownBy(() -> bookService.createBook(createBookRequest))
                     .isInstanceOf(BookException.DuplicateIsbnException.class)
                     .hasMessageContaining("이미 존재하는 ISBN입니다");
 
-            verify(bookRepository).existsByIsbn(createBookRequest.getIsbn().getValue());
+            verify(bookRepository).existsByIsbn(ISBN.of(createBookRequest.getIsbn().getValue()));
             verify(bookRepository, never()).save(any());
         }
 
@@ -263,10 +263,10 @@ public class BookServiceTest {
         @DisplayName("ISBN으로 도서 조회 성공")
         void getBookByIsbn_존재하는ISBN_조회성공() {
             // Given
-            given(bookRepository.findByISBN("9780132350884")).willReturn(Optional.of(savedBook));
+            given(bookRepository.findByISBN(ISBN.of("9780132350884"))).willReturn(Optional.of(savedBook));
 
             // When
-            Optional<Book> result = bookService.getBookByIsbn("9780132350884");
+            Optional<Book> result = bookService.getBookByIsbn(ISBN.of("9780132350884"));
 
             // Then
             assertThat(result).isPresent();
@@ -654,7 +654,7 @@ public class BookServiceTest {
         void getTotalBooksCount_전체도서수_반환() {
             // Given
             List<Book> allBooks = List.of(savedBook,
-                    Book.builder().id(2L).title("Test").author("Test").isbn(ISBN.of("123")).price(Money.of(BigDecimal.TEN)).build());
+                    Book.builder().id(2L).title("Test").author("Test").isbn(ISBN.of("4685137524851")).price(Money.of(BigDecimal.TEN)).build());
             given(bookRepository.findAll()).willReturn(allBooks);
 
             // When
@@ -682,10 +682,10 @@ public class BookServiceTest {
         @DisplayName("ISBN 존재 여부 확인")
         void isIsbnExists_존재하는ISBN_true반환() {
             // Given
-            given(bookRepository.existsByIsbn("9780132350884")).willReturn(true);
+            given(bookRepository.existsByIsbn(ISBN.of("9780132350884"))).willReturn(true);
 
             // When
-            boolean exists = bookService.isIsbnExists("9780132350884");
+            boolean exists = bookService.isIsbnExists(ISBN.of("9780132350884"));
 
             // Then
             assertThat(exists).isTrue();

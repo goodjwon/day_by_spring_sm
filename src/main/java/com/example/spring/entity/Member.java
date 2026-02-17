@@ -36,8 +36,8 @@ public class Member {
     @Column(name = "join_date")
     private LocalDateTime joinDate;
 
-    public MembershipType upgradeMembership(MembershipType targetType) {
-        return targetType;
+    public void upgradeMembership(MembershipType targetType) {
+        this.membershipType = targetType;
     }
 
     public void updateName(String name) {

@@ -30,7 +30,7 @@ public class DeliveryResponse {
                 .status(delivery.getStatus())
                 .recipientName(delivery.getRecipientName())
                 .zipCode(delivery.getZipCode())
-                .address(delivery.getDeliveryAddress())
+                .address(String.valueOf(delivery.getDeliveryAddress()))
                 .addressDetail(delivery.getAddressDetail())
                 .trackingNumber(delivery.getTrackingNumber())
                 .courierCompany(delivery.getCourierCompany())

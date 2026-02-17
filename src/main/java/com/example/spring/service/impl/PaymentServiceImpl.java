@@ -78,7 +78,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("결재 취소 요청 - ID: {}", paymentId);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentException.PaymentNotFoundException(paymentId));
-        if (!PaymentStatus.COMPLETED.equals(payment.getStatus())) {
+        if (!payment.getStatus().equals(PaymentStatus.COMPLETED)) {
             throw new PaymentException.InvalidPaymentStateException("완료된 결재만 취소할 수 있습니다");
         }
         payment.setStatus(PaymentStatus.CANCELLED);

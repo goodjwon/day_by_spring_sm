@@ -1,5 +1,6 @@
 package com.example.spring.repository.impl;
 
+import com.example.spring.domain.vo.ISBN;
 import com.example.spring.entity.Book;
 import com.example.spring.repository.BookRepository;
 import jakarta.persistence.EntityManager;
@@ -57,7 +58,7 @@ public class JpaBookRepository implements BookRepository {
     }
 
     @Override
-    public Optional<Book> findByISBN(String isbn) {
+    public Optional<Book> findByISBN(ISBN isbn) {
         TypedQuery<Book> query = em.createQuery("SELECT b FROM Book b WHERE b.isbn = :isbn", Book.class);
         query.setParameter("isbn", isbn);
 
@@ -66,7 +67,7 @@ public class JpaBookRepository implements BookRepository {
     }
 
     @Override
-    public boolean existsByIsbn(String isbn) {
+    public boolean existsByIsbn(ISBN isbn) {
         Long count = em.createQuery("SELECT COUNT(b) FROM Book b WHERE b.isbn = :isbn", Long.class)
                 .setParameter("isbn", isbn)
                 .getSingleResult();

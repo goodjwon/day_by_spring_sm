@@ -42,17 +42,16 @@ public class Book {
     @Column(nullable = false, length = 100)
     private String author;
 
-    @NotBlank(message = "ISBN은 필수입니다")
-    @Pattern(
-            regexp = "^\\d{3}-?\\d{1,5}-?\\d{1,7}-?\\d{1,7}-?\\d{1}$|^\\d{13}$|^ISBN\\d+$",
-            message = "올바른 ISBN 형식이 아닙니다"
-    )
-    @Column(nullable = false, unique = true, length = 17)
+    @NotNull(message = "ISBN은 필수입니다")
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "isbn",
+            nullable = false, unique = true, length = 17))
     private ISBN isbn;
 
     @NotNull(message = "가격은 필수입니다")
-    @DecimalMin(value = "0.0", message = "가격은 0 이상이어야 합니다")
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "price",
+            nullable = false, precision = 10, scale = 2))
     private Money price;
 
     @Builder.Default

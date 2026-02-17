@@ -198,7 +198,7 @@ class PaymentTest {
             Money refundAmount = Money.of(new BigDecimal("20000"));
 
             // When
-            testPayment.refund(refundAmount);
+            testPayment.partialRefund(refundAmount);
 
             // Then
             assertThat(testPayment.getStatus()).isEqualTo(PaymentStatus.PARTIAL_REFUNDED);
@@ -232,7 +232,7 @@ class PaymentTest {
         void isRefundable_partialRefunded_true() {
             // Given
             testPayment.complete("TXN-12345678");
-            testPayment.refund(Money.of(new BigDecimal("20000")));
+            testPayment.partialRefund(Money.of(new BigDecimal("20000")));
 
             // When & Then
             assertThat(testPayment.isRefundable()).isTrue();
