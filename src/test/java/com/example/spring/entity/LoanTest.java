@@ -441,7 +441,7 @@ class LoanTest {
             // then
             assertThat(loan.getReturnDate()).isNotNull();
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
-            assertThat(loan.getOverdueFee().getAmount).isEqualTo(Money.zero());
+            assertThat(loan.getOverdueFee()).isEqualTo(Money.zero());
         }
 
         @Test

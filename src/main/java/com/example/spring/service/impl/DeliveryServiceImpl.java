@@ -113,7 +113,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             throw new DeliveryException.AddressChangeNotAllowedException("배송 준비중일 때만 변경 가능합니다");
         }
         log.info("배송지 주소 변경 완료 - ID: {}", deliveryId);
-        return null;
+        return DeliveryResponse.from(delivery);
     }
 
     public void changeDetail(Delivery delivery, String newZipCode, Address newAddress,
@@ -121,7 +121,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         if (newZipCode == null || newAddress == null || newAddressDetails == null) {
             return;
         }
-        if (newZipCode.isEmpty() || newAddress.equals("") || newAddressDetails.equals("")) {
+        if (newZipCode.isEmpty() || newAddress.getAddress().isEmpty() || newAddressDetails.getAddress().isEmpty()) {
             throw new IllegalArgumentException("변경할 정보를 입력해 주세요");
         }
         delivery.setZipCode(newZipCode);

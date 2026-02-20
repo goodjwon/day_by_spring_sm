@@ -166,7 +166,7 @@ public class BookServiceTest {
 
         @Test
         @DisplayName("ISBN이 null인 도서 생성 실패")
-        void createBook_ISBNnull_예외발생() {
+        void createBook_ISBNNull_예외발생() {
             // Given
             CreateBookRequest invalidRequest = CreateBookRequest.builder()
                     .title("Clean Code")

@@ -35,10 +35,10 @@ public class Delivery {
     @Column(nullable = false)
     private String phoneNumber;
 
-
     private String zipCode;
 
     @Column(nullable = false)
+    @Embedded
     private Address deliveryAddress;
     private Address addressDetail;
 
@@ -88,7 +88,7 @@ public class Delivery {
     // DELIVERED
     public void delivered() {
         if (status != DeliveryStatus.OUT_FOR_DELIVERY) {
-throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리할 수 없는 상태입니다. 현재 상태: " + this.status);
+            throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리할 수 없는 상태입니다. 현재 상태: " + this.status);
         }
         this.status = DeliveryStatus.DELIVERED;
         this.deliveredDate = LocalDateTime.now();
@@ -132,8 +132,8 @@ throw new DeliveryException.InvalidDeliveryStateException("배송 완료 처리�
     public String getFullAddress(){
         return deliveryAddress.getFullAddress();
     }
-    public String getDeliveryAddress() {
-        return deliveryAddress.getAddress();
+    public Address getDeliveryAddress() {
+        return this.deliveryAddress;
     }
     public void changeAddress(Address address) {
         this.deliveryAddress = address;

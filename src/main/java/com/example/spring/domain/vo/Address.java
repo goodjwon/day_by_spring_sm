@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 주소를 나타내는 Value Object
+ *
  */
 @Embeddable
 @Getter

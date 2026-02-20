@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * 금액을 나타내는 Value Object
@@ -21,7 +22,6 @@ public class Money {
 
     public static final Money ZERO = Money.of(BigDecimal.ZERO);
     public static final String DEFAULT_CURRENCY = "KRW";
-    public boolean getAmount;
 
     @Column(name = "amount", precision = 15, scale = 2)
     private BigDecimal amount;
@@ -53,9 +53,8 @@ public class Money {
     }
 
     public static Money zero() {
-        return Money.ZERO;
+        return ZERO;
     }
-
 
     public Money add(Money other) {
         validateSameCurrency(other);
@@ -107,7 +106,6 @@ public class Money {
         return this.amount.compareTo(BigDecimal.ZERO) < 0;
     }
 
-
     public Money divide(int divisor) {
         if (divisor == 0) {
             throw new IllegalArgumentException("0으로 나눌 수 없습니다");
@@ -144,7 +142,6 @@ public class Money {
                     String.format("통화가 다릅니다: %s vs %s", this.currency, other.currency));
         }
     }
-
 
     @Override
     public String toString() {

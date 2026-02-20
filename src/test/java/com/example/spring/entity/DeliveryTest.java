@@ -245,46 +245,45 @@ class DeliveryTest {
             assertThat(fullAddress).contains("101호");
         }
 
-//        @Test
-//        @DisplayName("개별 주소 정보 조회")
-//        void getAddressParts_success() {
-//            assertThat(testDelivery.getZipCode()).isEqualTo("12345");
-//            assertThat(testDelivery.getDeliveryAddress()).isEqualTo("서울시 강남구 테헤란로");
-//            assertThat(testDelivery.getAddressDetail()).isEqualTo("101호");
-//        }
-//
-//        @Test
-//        @DisplayName("주소가 null인 경우 null 반환")
-//        void getAddress_nullAddress_returnsNull() {
-//            // Given
-//            Delivery delivery = Delivery.builder()
-//                    .order(testOrder)
-//                    .recipientName("테스트")
-//                    .phoneNumber("010-0000-0000")
-//                    .build();
-//
-//            // When & Then
-//            assertThat(delivery.getZipCode()).isNull();
-//            assertThat(delivery.getDeliveryAddress()).isNull();
-//            assertThat(delivery.getFullAddress()).isNull();
-//        }
-//    }
+        @Test
+        @DisplayName("개별 주소 정보 조회")
+        void getAddressParts_success() {
+            assertThat(testDelivery.getZipCode()).isEqualTo("12345");
+            assertThat(testDelivery.getDeliveryAddress()).isEqualTo("서울시 강남구 테헤란로");
+            assertThat(testDelivery.getAddressDetail()).isEqualTo("101호");
+        }
 
-        @Nested
-        @DisplayName("배송 상태 테스트")
-        class DeliveryStatusTest {
+        @Test
+        @DisplayName("주소가 null인 경우 null 반환")
+        void getAddress_nullAddress_returnsNull() {
+            // Given
+            Delivery delivery = Delivery.builder()
+                    .order(testOrder)
+                    .recipientName("테스트")
+                    .phoneNumber("010-0000-0000")
+                    .build();
 
-            @Test
-            @DisplayName("모든 배송 상태 확인")
-            void allDeliveryStatuses() {
-                assertThat(DeliveryStatus.values()).contains(
-                        DeliveryStatus.PREPARING,
-                        DeliveryStatus.IN_TRANSIT,
-                        DeliveryStatus.OUT_FOR_DELIVERY,
-                        DeliveryStatus.DELIVERED,
-                        DeliveryStatus.FAILED
-                );
-            }
+            // When & Then
+            assertThat(delivery.getZipCode()).isNull();
+            assertThat(delivery.getDeliveryAddress()).isNull();
+            assertThat(delivery.getFullAddress()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("배송 상태 테스트")
+    class DeliveryStatusTest {
+
+        @Test
+        @DisplayName("모든 배송 상태 확인")
+        void allDeliveryStatuses() {
+            assertThat(DeliveryStatus.values()).contains(
+                    DeliveryStatus.PREPARING,
+                    DeliveryStatus.IN_TRANSIT,
+                    DeliveryStatus.OUT_FOR_DELIVERY,
+                    DeliveryStatus.DELIVERED,
+                    DeliveryStatus.FAILED
+            );
         }
     }
 }

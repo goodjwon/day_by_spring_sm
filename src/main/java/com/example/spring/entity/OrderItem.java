@@ -50,4 +50,8 @@ public class OrderItem {
         this.price = price;
         totalPrice = price.multiply(quantity);
     }
+
+    public Money getTotalPrice() {
+        return totalPrice = price.multiply(quantity);
+    }
 }
