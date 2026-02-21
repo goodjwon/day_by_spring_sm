@@ -1,6 +1,6 @@
 package com.example.spring.exception;
 
-import com.example.spring.entity.OrderStatus;
+import com.example.spring.domain.model.OrderStatus;
 
 /**
  * 주문 관련 예외 클래스들
@@ -12,7 +12,7 @@ public class OrderException {
      */
     public static class OrderNotFoundException extends BusinessException {
         public OrderNotFoundException(Long id) {
-            super("ORDER_NOT_FOUND", "주문을 찾을 수 없습니다. ID: " + id);
+            super("ORDER_NOT_FOUND", ErrorMessages.orderNotFound(id));
         }
     }
 
@@ -21,8 +21,7 @@ public class OrderException {
      */
     public static class OrderCancellationNotAllowedException extends BusinessException {
         public OrderCancellationNotAllowedException(Long orderId, OrderStatus status) {
-            super("ORDER_CANCELLATION_NOT_ALLOWED",
-                    String.format("주문을 취소할 수 없습니다. 주문 ID: %d, 현재 상태: %s", orderId, status));
+            super("ORDER_CANCELLATION_NOT_ALLOWED", ErrorMessages.orderCancellationNotAllowed(orderId, status));
         }
 
         public OrderCancellationNotAllowedException(String message) {
@@ -44,7 +43,7 @@ public class OrderException {
      */
     public static class EmptyOrderItemsException extends BusinessException {
         public EmptyOrderItemsException() {
-            super("EMPTY_ORDER_ITEMS", "주문 항목이 비어있습니다.");
+            super("EMPTY_ORDER_ITEMS", ErrorMessages.EMPTY_ORDER_ITEMS);
         }
     }
 

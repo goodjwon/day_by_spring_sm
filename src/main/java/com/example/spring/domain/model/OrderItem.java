@@ -1,0 +1,43 @@
+package com.example.spring.domain.model;
+
+import com.example.spring.domain.vo.Money;
+import jakarta.persistence.*;
+import lombok.*;
+
+// 주문 상품 엔티티
+@Entity
+@Table(name = "order_item")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private Book book;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    @Column(nullable = false)
+    private Money price;
+
+    private Money totalPrice;
+
+    public void changeQuantity(int quantity) {
+        totalPrice = price.multiply(quantity);
+    }
+
+    public void updatePrice(Money price) {
+        this.price = price;
+    }
+}

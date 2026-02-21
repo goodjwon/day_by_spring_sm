@@ -1,16 +1,18 @@
 package com.example.spring.exception;
 
-import com.example.spring.entity.DeliveryStatus;
+import com.example.spring.domain.model.DeliveryStatus;
 
+/**
+ * 배송 관련 예외 클래스들
+ */
 public class DeliveryException {
-
 
     /**
      * 배송 정보를 찾을 수 없는 예외
      */
     public static class DeliveryNotFoundException extends BusinessException {
         public DeliveryNotFoundException(Long id) {
-            super("DELIVERY_NOT_FOUND", "배송 정보를 찾을 수 없습니다. ID: " + id);
+            super("DELIVERY_NOT_FOUND", ErrorMessages.deliveryNotFound(id));
         }
 
         public DeliveryNotFoundException(String message) {

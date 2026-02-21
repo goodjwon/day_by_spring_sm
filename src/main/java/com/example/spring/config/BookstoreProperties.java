@@ -1,8 +1,8 @@
 package com.example.spring.config;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import lombok.Data;
 
 /**
  * 타입 안전한 설정 관리

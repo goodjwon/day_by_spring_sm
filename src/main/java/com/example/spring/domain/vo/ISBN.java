@@ -1,5 +1,6 @@
 package com.example.spring.domain.vo;
 
+import com.example.spring.exception.ErrorMessages;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -36,10 +37,10 @@ public class ISBN {
 
     private void validate(String value) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("ISBN은 필수입니다");
+            throw new IllegalArgumentException(ErrorMessages.ISBN_REQUIRED);
         }
         if (!ISBN_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("올바른 ISBN 형식이 아닙니다: " + value);
+            throw new IllegalArgumentException(ErrorMessages.invalidIsbn(value));
         }
     }
 

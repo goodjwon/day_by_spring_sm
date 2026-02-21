@@ -1,46 +1,49 @@
-# 기본 설정
+# ========================================
+# 공통 설정 (모든 프로파일에 적용)
+# ========================================
 spring:
   application:
     name: spring-library-system
 
-  # 프로파일 설정
+  # 기본 프로파일: h2
   profiles:
-    active: dev
+    active: h2
 
-  # JPA 설정
+  # JPA 공통 설정
   jpa:
     hibernate:
-      ddl-auto: create-drop  # 테이블 자동 생성
+      ddl-auto: create-drop  # 프로파일별로 오버라이드 가능
     show-sql: true
+    open-in-view: false  # OSIV 비활성화 - 성능 최적화 (Lazy Loading은 서비스 레이어에서 처리)
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true  # ⭐⭐⭐ 매우 중요!
+        use_sql_comments: true
+        highlight_sql: true
+        jdbc:
+          batch_size: 20  # 배치 처리 최적화
+        order_inserts: true
+        order_updates: true
+    defer-datasource-initialization: true
 
-  # SQL 스크립트 실행
+  # SQL 스크립트 실행 설정
   sql:
     init:
-      mode: never
-      data-locations: classpath:data.sql
+      mode: never  # 프로파일별로 오버라이드
 
 # 로깅 설정
 logging:
   level:
     com.example.library: DEBUG
+    com.example.spring: INFO
+    com.example.spring.aop.LoggingAspect: INFO
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
-# 커스텀 설정
-library:
-  loan:
-    default-period-weeks: 2
-    max-renewal-count: 2
-  notification:
-    email:
-      enabled: true
-      from: library@example.com
-
+    org.hibernate.orm.jdbc.bind: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 # SpringDoc OpenAPI 설정
 springdoc:
@@ -58,77 +61,16 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
 
----
-# 개발 환경 설정
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  # H2 데이터베이스 설정
-  datasource:
-    # url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    # url: jdbc:h2:tcp://localhost:9092/mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9093
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-
-  # H2 Console 활성화
-  h2:
-    console:
+# 커스텀 설정
+library:
+  loan:
+    default-period-weeks: 2
+    max-renewal-count: 2
+  notification:
+    email:
       enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
-  #캐시 설정
-  cache:
-    type: { cache-names: "- members
-          - books" }
+      from: library@example.com
 
 # 서버 설정
 server:
   port: 8080
-
----
-# 테스트 환경 설정
-spring:
-  config:
-    activate:
-      on-profile: test
-
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-
----
-# 운영 환경 설정
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/library_system
-    username: ${DB_USERNAME:library_user}
-    password: ${DB_PASSWORD:library_pass}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: false
-
-server:
-  port: 80
-
-library:
-  notification:
-    email:
-      smtp:
-        host: smtp.company.com
-        port: 587
-        username: ${SMTP_USERNAME}
-        password: ${SMTP_PASSWORD}
