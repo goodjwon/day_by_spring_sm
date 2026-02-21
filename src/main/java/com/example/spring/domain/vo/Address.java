@@ -1,5 +1,6 @@
 package com.example.spring.domain.vo;
 
+import com.example.spring.exception.ErrorMessages;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -46,7 +47,7 @@ public class Address {
 
     private void validate(String address) {
         if (address == null || address.isBlank()) {
-            throw new IllegalArgumentException("주소는 필수입니다");
+            throw new IllegalArgumentException(ErrorMessages.ADDRESS_REQUIRED);
         }
     }
 
