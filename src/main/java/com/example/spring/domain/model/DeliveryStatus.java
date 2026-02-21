@@ -1,5 +1,8 @@
 package com.example.spring.domain.model;
 
+/**
+ * 배송 상태
+ */
 public enum DeliveryStatus {
     PREPARING,     // 배송 준비중
     IN_TRANSIT,    // 배송중
